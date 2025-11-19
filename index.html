@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIRUS HUNTER v9.5</title>
+    <title>VIRUS HUNTER v12.0</title>
+    <!-- Подключаем библиотеку для работы с ZIP архивами -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body {
             background-color: #000;
@@ -66,7 +68,7 @@
             padding: 10px;
             border-radius: 3px;
             gap: 5px;
-            width: 900px;
+            width: 1000px; /* Расширили для новых кнопок */
             max-width: 95%;
             box-sizing: border-box;
         }
@@ -82,9 +84,9 @@
             box-sizing: border-box;
         }
 
-        #targetType { width: 130px; }
+        #targetType { width: 180px; }
         #fileInput { flex-grow: 1; color: #aaa; }
-        #scanMode { width: 180px; }
+        #scanMode { width: 160px; }
         
         #btnScan {
             background: #006400;
@@ -99,7 +101,7 @@
         #btnScan:disabled { background: #333; color: #555; cursor: not-allowed; }
 
         .status-bar {
-            width: 900px;
+            width: 1000px;
             max-width: 95%;
             margin-top: 10px;
             margin-bottom: 5px;
@@ -110,10 +112,11 @@
         }
         .user-badge { color: gold; }
 
+        /* Терминал */
         .terminal {
-            width: 900px;
+            width: 1000px;
             max-width: 95%;
-            height: 400px;
+            height: 450px;
             border: 1px solid #00ff00;
             background: #000;
             padding: 15px;
@@ -123,53 +126,48 @@
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.05);
         }
 
-        .log-line { margin-bottom: 4px; }
+        .log-line { margin-bottom: 4px; word-break: break-all; }
         .danger { color: #ff3333; }
+        .warn { color: #ffa500; } /* Оранжевый для предупреждений */
         .sys { color: #555; }
+        .info { color: #00ffff; }
         .decrypt { color: #d600ff; }
+        .zip-entry { color: #ffff00; border-top: 1px dashed #333; margin-top: 5px; padding-top: 2px; }
 
-        /* --- ВЕРДИКТ (С ДЕТАЛЯМИ) --- */
+        /* --- ВЕРДИКТ --- */
         .verdict-modal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.95); border: 2px solid #fff; padding: 30px; text-align: center; z-index: 100;
             box-shadow: 0 0 30px rgba(255,255,255,0.2);
-            width: 350px;
+            width: 400px;
         }
         .v-title-text { color:#888; font-size:16px; }
         .v-score { font-size: 40px; font-weight: bold; margin: 10px 0; }
-        .v-desc { color: #00ff00; margin-bottom: 15px; font-size: 14px; }
+        .v-desc { margin-bottom: 15px; font-size: 14px; }
         
-        /* Список найденных угроз */
         .v-details-box {
             background: #111;
             border: 1px solid #333;
             padding: 10px;
             margin-bottom: 20px;
-            max-height: 150px;
+            max-height: 200px;
             overflow-y: auto;
             text-align: left;
             font-size: 12px;
-            display: none; /* Скрыто если чисто */
+            display: none;
         }
         .v-details-list { list-style: none; padding: 0; margin: 0; }
         .v-details-list li { color: #ff5555; margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 2px;}
+        .v-details-list li.warn-item { color: #ffa500; }
 
         .btn-close { background: transparent; border: 1px solid #fff; color: #fff; padding: 8px 25px; cursor: pointer; font-family: inherit; }
         .btn-close:hover { background: #fff; color: #000; }
 
-        /* --- КНОПКИ ВЕРХНЕГО МЕНЮ --- */
-        .top-menu {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 12px;
-        }
-        .menu-btn {
-            background: none; border: 1px solid #333; color: #666; padding: 4px 8px; cursor: pointer; margin-left: 5px;
-        }
+        /* --- MENU & FEED --- */
+        .top-menu { position: absolute; top: 20px; right: 20px; font-size: 12px; }
+        .menu-btn { background: none; border: 1px solid #333; color: #666; padding: 4px 8px; cursor: pointer; margin-left: 5px; }
         .menu-btn:hover { border-color: #00ff00; color: #00ff00; }
         
-        /* ФИД СПРАВА */
         .feed-panel {
             position: fixed; top: 0; right: 0; bottom: 0; width: 300px;
             background: #111; border-left: 1px solid #00ff00;
@@ -178,6 +176,7 @@
         .feed-panel.open { display: flex; }
         .feed-item { background: #1a1a1a; padding: 5px; margin-bottom: 5px; border-left: 2px solid #555; font-size: 12px; color: #ccc; }
         .feed-item.infected { border-color: red; }
+        .feed-item.warning { border-color: orange; }
 
     </style>
 </head>
@@ -197,19 +196,24 @@
 
     <!-- ПРИЛОЖЕНИЕ -->
     <div id="app-screen">
-        
         <div class="top-menu">
             <span id="user-display" style="color:#444; margin-right:10px;">...</span>
             <button class="menu-btn" onclick="toggleFeed()">FEED</button>
             <button class="menu-btn" onclick="doLogout()">EXIT</button>
         </div>
 
-        <h1>🧬 VIRUS HUNTER v9.5</h1>
+        <h1>🧬 VIRUS HUNTER v12.0</h1>
 
         <div class="control-bar">
             <select id="targetType" title="Target Type">
                 <option value="bat">Batch (.bat)</option>
                 <option value="py">Python (.py)</option>
+                <option value="exe">Binary (.exe)</option>
+                <option value="jar">Java (.jar)</option>
+                <option value="vbs">VBScript (.vbs)</option>
+                <option value="ps1">PowerShell (.ps1)</option>
+                <option value="web">Web (.html/.js)</option>
+                <option value="zip">Archive (.zip)</option>
             </select>
 
             <input type="file" id="fileInput">
@@ -224,12 +228,12 @@
         </div>
 
         <div class="status-bar">
-            <span id="status-text">System ready. Select file to begin.</span>
+            <span id="status-text">System ready. Select file.</span>
             <span id="sub-badge" style="color:#888;">SUBSCRIPTION: LOADING...</span>
         </div>
 
         <div class="terminal" id="terminal">
-            <div class="sys">> Initializing core modules... OK</div>
+            <div class="sys">> Initializing all modules (ZIP/PE/WEB)... OK</div>
             <div class="sys">> Connected to Firebase Cloud... OK</div>
         </div>
 
@@ -240,13 +244,12 @@
         </div>
     </div>
 
-    <!-- ВЕРДИКТ (ОБНОВЛЕННЫЙ) -->
+    <!-- ВЕРДИКТ -->
     <div id="verdict" class="verdict-modal">
         <div class="v-title-text">SCAN RESULT</div>
         <div id="v-score" class="v-score">CLEAN</div>
         <div id="v-desc">No threats detected.</div>
         
-        <!-- НОВЫЙ БЛОК ДЛЯ СПИСКА УГРОЗ -->
         <div id="v-details" class="v-details-box">
             <div style="color:#888; margin-bottom:5px; border-bottom:1px solid #333;">THREAT REPORT:</div>
             <ul id="v-list" class="v-details-list"></ul>
@@ -274,7 +277,7 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        let fileLines = [];
+        let fileRawData = null;
         let fileName = "";
 
         window.toggleFeed = () => document.getElementById('feedPanel').classList.toggle('open');
@@ -322,6 +325,8 @@
             .catch(e => alert(e.message));
         };
 
+        // --- БАЗЫ СИГНАТУР ---
+        
         const batRules = [
             { regex: /format\s/i, msg: "FORMAT DISK", score: 10 },
             { regex: /del\s|erase\s/i, msg: "DELETE FILE", score: 2 },
@@ -329,6 +334,7 @@
             { regex: /%0/i, msg: "FORK BOMB", score: 10 },
             { regex: /reg add|reg delete/i, msg: "REGISTRY EDIT", score: 8 }
         ];
+        
         const pyRules = [
             { regex: /os\.remove|shutil\.rmtree/i, msg: "PY: DELETE FILE", score: 3 },
             { regex: /ctypes\.windll|BlockInput/i, msg: "PY: BLOCK INPUT", score: 10 },
@@ -336,18 +342,63 @@
             { regex: /socket|requests\.post/i, msg: "PY: STEAL DATA", score: 2 }
         ];
 
+        const exeRules = [
+            { regex: /ShellExecute/i, msg: "API: EXECUTE COMMAND", score: 3 },
+            { regex: /InternetOpen|URLDownloadToFile/i, msg: "API: DOWNLOADER", score: 5 },
+            { regex: /RegSetValueEx/i, msg: "API: REGISTRY WRITE", score: 4 },
+            { regex: /GetAsyncKeyState|SetWindowsHookEx/i, msg: "API: KEYLOGGER HOOK", score: 8 },
+            { regex: /cmd\.exe|powershell\.exe/i, msg: "STR: SHELL CALL", score: 5 }
+        ];
+
+        const jarRules = [
+            { regex: /java\/lang\/Runtime|getRuntime/i, msg: "JAVA: RUNTIME EXEC", score: 5 },
+            { regex: /java\/net\/URLClassLoader/i, msg: "JAVA: REMOTE LOADER", score: 6 },
+            { regex: /org\/bukkit|force-op/i, msg: "MC: MALICIOUS PLUGIN", score: 8 }
+        ];
+
+        // ИСПРАВЛЕННЫЙ VBS (Снизили баллы)
+        const vbsRules = [
+            { regex: /CreateObject\("WScript\.Shell"\)/i, msg: "VBS: SHELL OBJECT", score: 2 }, // Было 3, стало 2 (Warning)
+            { regex: /FileSystemObject/i, msg: "VBS: FILE SYSTEM", score: 2 },
+            { regex: /AutoOpen/i, msg: "VBS: MACRO VIRUS", score: 5 },
+            { regex: /powershell/i, msg: "VBS: POWERSHELL CALL", score: 4 }
+        ];
+
+        // НОВЫЕ ПРАВИЛА
+        const ps1Rules = [
+            { regex: /Invoke-Expression|IEX/i, msg: "PS1: EXECUTE (IEX)", score: 5 },
+            { regex: /Net\.WebClient|DownloadString/i, msg: "PS1: DOWNLOADER", score: 5 },
+            { regex: /-WindowStyle\s+Hidden/i, msg: "PS1: HIDDEN WINDOW", score: 4 },
+            { regex: /Bypass/i, msg: "PS1: BYPASS POLICY", score: 3 }
+        ];
+
+        const webRules = [
+            { regex: /<script|javascript:/i, msg: "WEB: INLINE SCRIPT", score: 1 },
+            { regex: /eval\(|document\.cookie/i, msg: "JS: DANGEROUS FUNC", score: 2 },
+            { regex: /window\.location\.replace/i, msg: "JS: REDIRECT", score: 2 },
+            { regex: /iframe.*display:\s*none/i, msg: "HTML: HIDDEN IFRAME", score: 4 }
+        ];
+
+
         document.getElementById('fileInput').onchange = (e) => {
             const f = e.target.files[0];
             if(f) {
                 fileName = f.name;
-                const r = new FileReader();
-                r.onload = (ev) => {
-                    fileLines = ev.target.result.split('\n');
-                    document.getElementById('btnScan').disabled = false;
-                    log(`Loaded: ${fileName} (${fileLines.length} lines)`);
-                    document.getElementById('status-text').innerText = `Ready to scan: ${fileName}`;
-                };
-                r.readAsText(f, 'CP866');
+                fileRawData = f; 
+                document.getElementById('btnScan').disabled = false;
+                log(`File Selected: ${fileName} (${(f.size/1024).toFixed(1)} KB)`);
+                
+                // Авто-определение
+                const ext = fileName.split('.').pop().toLowerCase();
+                const sel = document.getElementById('targetType');
+                if(['bat','cmd'].includes(ext)) sel.value='bat';
+                if(['py','pyw'].includes(ext)) sel.value='py';
+                if(['exe','dll'].includes(ext)) sel.value='exe';
+                if(['jar'].includes(ext)) sel.value='jar';
+                if(['vbs'].includes(ext)) sel.value='vbs';
+                if(['ps1'].includes(ext)) sel.value='ps1';
+                if(['html','htm','js'].includes(ext)) sel.value='web';
+                if(['zip','rar'].includes(ext)) sel.value='zip';
             }
         };
 
@@ -357,53 +408,128 @@
             term.scrollTop = term.scrollHeight;
         }
 
-        window.startScanLogic = () => {
+        window.startScanLogic = async () => {
             const mode = document.getElementById('scanMode').value;
             const type = document.getElementById('targetType').value;
-            const rules = (type === 'py') ? pyRules : batRules;
             
             document.getElementById('btnScan').disabled = true;
             document.getElementById('terminal').innerHTML = "";
             document.getElementById('verdict').style.display = "none";
             
-            log(`SCAN STARTED. MODE: ${mode.toUpperCase()}`);
+            log(`SCAN STARTED. MODE: ${mode.toUpperCase()} | TARGET: ${type.toUpperCase()}`);
 
-            let delay = mode==='full'?20:5;
-            let acc = mode==='fast'?0.5:(mode==='auto'?0.8:1.0);
-            let idx = 0;
-            let score = 0;
-            let uniqueThreats = new Set(); // Собираем уникальные угрозы
+            let uniqueThreats = new Set();
+            let totalScore = 0;
 
-            function step() {
-                if(idx >= fileLines.length) { finish(score, mode, uniqueThreats); return; }
-                let line = fileLines[idx].trim();
-                
-                if(mode==='full' && type==='bat' && line.includes('^')) {
-                    line = line.replaceAll('^', '');
-                    if(Math.random()>0.9) log("Decrypting code...", "decrypt");
-                }
+            // ЛОГИКА ДЛЯ ZIP (Архивы)
+            if(type === 'zip') {
+                log("Reading ZIP archive...", "sys");
+                try {
+                    const zip = new JSZip();
+                    const content = await zip.loadAsync(fileRawData);
+                    let fileCount = 0;
 
-                if(line && !line.startsWith('rem') && !line.startsWith('#')) {
-                    for(const r of rules) {
-                        if(r.regex.test(line) && Math.random()<=acc) {
-                            score += r.score;
-                            log(`DETECTED: ${r.msg}`, "danger");
-                            uniqueThreats.add(r.msg); // Добавляем в список
-                            break;
+                    // Перебираем файлы внутри ZIP
+                    for (const [relativePath, zipEntry] of Object.entries(content.files)) {
+                        if(zipEntry.dir) continue;
+                        fileCount++;
+                        log(`Extracting: ${relativePath}`, "zip-entry");
+                        
+                        // Читаем файл как текст
+                        const text = await zipEntry.async("string");
+                        
+                        // Определяем правила по расширению файла внутри архива
+                        let innerRules = [];
+                        if(relativePath.endsWith('.bat')) innerRules = batRules;
+                        else if(relativePath.endsWith('.py')) innerRules = pyRules;
+                        else if(relativePath.endsWith('.vbs')) innerRules = vbsRules;
+                        else if(relativePath.endsWith('.ps1')) innerRules = ps1Rules;
+                        else if(relativePath.endsWith('.js') || relativePath.endsWith('.html')) innerRules = webRules;
+                        
+                        // Сканируем содержимое файла
+                        if(innerRules.length > 0) {
+                             const lines = text.split('\n');
+                             lines.forEach(line => {
+                                 if(line.trim().length > 3) {
+                                     for(const r of innerRules) {
+                                         if(r.regex.test(line)) {
+                                             totalScore += r.score;
+                                             uniqueThreats.add(`${r.msg} in ${relativePath}`);
+                                             log(`DETECTED: ${r.msg}`, "danger");
+                                         }
+                                     }
+                                 }
+                             });
                         }
                     }
+                    log(`ZIP Scan Complete. Scanned ${fileCount} files.`);
+                    finish(totalScore, mode, uniqueThreats);
+
+                } catch(e) {
+                    log("Error reading ZIP: " + e, "danger");
+                    document.getElementById('btnScan').disabled = false;
                 }
-                idx++;
-                setTimeout(step, delay);
+                return; // Выход, так как ZIP обработан отдельно
             }
-            step();
+
+            // ЛОГИКА ДЛЯ ОБЫЧНЫХ ФАЙЛОВ
+            let rules = batRules;
+            if(type === 'py') rules = pyRules;
+            if(type === 'exe') rules = exeRules;
+            if(type === 'jar') rules = jarRules;
+            if(type === 'vbs') rules = vbsRules;
+            if(type === 'ps1') rules = ps1Rules;
+            if(type === 'web') rules = webRules;
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const text = ev.target.result;
+                const lines = text.split('\n');
+                
+                let delay = mode==='full'?10:2;
+                let idx = 0;
+
+                function step() {
+                    if(idx >= lines.length) { finish(totalScore, mode, uniqueThreats); return; }
+                    let line = lines[idx].trim();
+
+                    if(line.length > 3 && !line.startsWith('rem') && !line.startsWith('#')) {
+                        for(const r of rules) {
+                            if(r.regex.test(line)) {
+                                totalScore += r.score;
+                                uniqueThreats.add(r.msg);
+                                log(`DETECTED: ${r.msg}`, "danger");
+                                break; // Одна угроза на строку
+                            }
+                        }
+                    }
+                    idx++;
+                    if(idx % 10 === 0) setTimeout(step, delay); else step();
+                }
+                step();
+            };
+
+            // Бинарники (exe/jar) читаем как ISO, текст как текст
+            if(type === 'exe' || type === 'jar') reader.readAsText(fileRawData, 'ISO-8859-1');
+            else reader.readAsText(fileRawData, 'CP866');
         };
 
-        // Обновили finish, чтобы принимал список угроз
         function finish(score, mode, threats) {
             document.getElementById('btnScan').disabled = false;
-            const status = score > 0 ? "INFECTED" : "CLEAN";
-            log(`RESULT: ${status}`, score>0?"danger":"");
+            
+            let status = "CLEAN";
+            let color = "lime";
+
+            // НОВАЯ ЛОГИКА ВЕРДИКТА (3 Уровня)
+            if(score >= 5) {
+                status = "INFECTED";
+                color = "red";
+            } else if (score > 0) {
+                status = "WARNING"; // Желтый уровень для подозрительных VBS
+                color = "orange";
+            }
+
+            log(`RESULT: ${status}`, score >= 5 ? "danger" : (score > 0 ? "warn" : "safe"));
             
             const v = document.getElementById('verdict');
             const vs = document.getElementById('v-score');
@@ -412,21 +538,24 @@
             const vList = document.getElementById('v-list');
             
             v.style.display = "block";
-            vList.innerHTML = ""; // Очистка списка
+            v.style.borderColor = color;
+            vList.innerHTML = "";
+
+            vs.innerText = status;
+            vs.style.color = color;
 
             if(score === 0) {
-                v.style.borderColor="lime"; vs.innerText="CLEAN"; vs.style.color="lime";
-                vd.innerText="No threats detected.";
-                vDetails.style.display = "none"; // Прячем список
+                vd.innerText = "No threats detected.";
+                vDetails.style.display = "none";
             } else {
-                v.style.borderColor="red"; vs.innerText="INFECTED"; vs.style.color="red";
-                vd.innerText=`Threat Score: ${score}.`;
-                vDetails.style.display = "block"; // Показываем список
+                vd.innerText = `Threat Score: ${score}`;
+                vd.style.color = color;
+                vDetails.style.display = "block";
                 
-                // Заполняем список уникальными угрозами
                 threats.forEach(msg => {
                     let li = document.createElement("li");
                     li.innerText = "• " + msg;
+                    if(score < 5) li.className = "warn-item"; // Оранжевый текст в списке
                     vList.appendChild(li);
                 });
             }
@@ -444,7 +573,10 @@
                 const d = s.val();
                 if(!d) return;
                 Object.values(d).reverse().slice(0,15).forEach(i => {
-                    const c = i.score>0?"infected":"";
+                    let c = "clean";
+                    if(i.score >= 5) c = "infected";
+                    else if(i.score > 0) c = "warning"; // Поддержка желтого в фиде
+                    
                     f.innerHTML += `<div class="feed-item ${c}"><b>${i.filename}</b><br>${i.status} (${i.user?i.user.split('@')[0]:'?'})</div>`;
                 });
             });
