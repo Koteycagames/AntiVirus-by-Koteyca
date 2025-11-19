@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIRUS HUNTER v9.2</title>
+    <title>VIRUS HUNTER v9.4</title>
     <style>
         body {
             background-color: #000;
@@ -12,7 +12,7 @@
             margin: 0;
             padding: 0;
             height: 100vh;
-            overflow: hidden; /* Чтобы не скроллилось лишнее */
+            overflow: hidden;
         }
 
         /* --- 1. ЭКРАН ВХОДА --- */
@@ -58,6 +58,7 @@
             text-shadow: 0 0 10px #00ff00;
         }
 
+        /* Панель управления - ОДНА СТРОКА */
         .control-bar {
             display: flex;
             background: #111;
@@ -109,6 +110,7 @@
         }
         .user-badge { color: gold; }
 
+        /* Терминал */
         .terminal {
             width: 900px;
             max-width: 95%;
@@ -127,21 +129,22 @@
         .sys { color: #555; }
         .decrypt { color: #d600ff; }
 
-        /* --- ВЕРДИКТ (Исправлено) --- */
+        /* --- ВЕРДИКТ --- */
         .verdict-modal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.95); border: 2px solid #fff; padding: 40px; text-align: center; z-index: 100;
             box-shadow: 0 0 30px rgba(255,255,255,0.2);
-            width: 300px; /* Фиксированная ширина */
+            width: 300px;
         }
         .v-title-text { color:#888; font-size:16px; }
-        .v-score { font-size: 40px; font-weight: bold; margin: 15px 0; } /* Уменьшил margin-top */
+        .v-score { font-size: 40px; font-weight: bold; margin: 15px 0; }
         .v-desc { 
             color: #00ff00; 
-            margin-bottom: 25px; /* УВЕЛИЧИЛ ОТСТУП */
-            font-size: 14px; /* Уменьшил размер */
+            margin-bottom: 30px; 
+            font-size: 14px; 
         }
-        .btn-close { background: transparent; border: 1px solid #fff; color: #fff; padding: 5px 20px; cursor: pointer; }
+        .btn-close { background: transparent; border: 1px solid #fff; color: #fff; padding: 8px 25px; cursor: pointer; font-family: inherit; }
+        .btn-close:hover { background: #fff; color: #000; }
 
         /* --- КНОПКИ ВЕРХНЕГО МЕНЮ --- */
         .top-menu {
@@ -169,7 +172,8 @@
 </head>
 <body>
 
-    <!-- ВХОД --><div id="auth-screen">
+    <!-- ВХОД -->
+    <div id="auth-screen">
         <div class="auth-box">
             <h2 style="margin:0 0 20px 0; color:#00ff00;">SYSTEM LOGIN</h2>
             <input type="email" id="email" class="auth-input" placeholder="Email">
@@ -180,51 +184,59 @@
         </div>
     </div>
 
-    <!-- ПРИЛОЖЕНИЕ --><div id="app-screen">
+    <!-- ПРИЛОЖЕНИЕ -->
+    <div id="app-screen">
         
-        <!-- Меню справа сверху (Выход, Фид) --><div class="top-menu">
+        <!-- Меню справа сверху -->
+        <div class="top-menu">
             <span id="user-display" style="color:#444; margin-right:10px;">...</span>
             <button class="menu-btn" onclick="toggleFeed()">FEED</button>
             <button class="menu-btn" onclick="doLogout()">EXIT</button>
         </div>
 
-        <!-- Заголовок --><h1>🧬 VIRUS HUNTER v9.2</h1>
+        <!-- Заголовок -->
+        <h1>🧬 VIRUS HUNTER v9.4</h1>
 
-        <!-- ПАНЕЛЬ УПРАВЛЕНИЯ (В ОДНУ СТРОКУ) --><div class="control-bar">
-            <!-- 1. Выбор типа (Python/Bat) --><select id="targetType" title="Target Type">
+        <!-- ПАНЕЛЬ УПРАВЛЕНИЯ -->
+        <div class="control-bar">
+            <select id="targetType" title="Target Type">
                 <option value="bat">Batch (.bat)</option>
                 <option value="py">Python (.py)</option>
             </select>
 
-            <!-- 2. Выбор файла --><input type="file" id="fileInput">
+            <input type="file" id="fileInput">
 
-            <!-- 3. Режим --><select id="scanMode" title="Scan Mode">
+            <select id="scanMode" title="Scan Mode">
                 <option value="fast">Fast Scan</option>
                 <option value="auto" disabled>Auto (Smart) [LOCK]</option>
                 <option value="full" disabled>Full (Deep) [LOCK]</option>
             </select>
 
-            <!-- 4. Кнопка --><button id="btnScan" disabled onclick="startScanLogic()">ЗАПУСК</button>
+            <button id="btnScan" disabled onclick="startScanLogic()">ЗАПУСК</button>
         </div>
 
-        <!-- Статус бар --><div class="status-bar">
+        <!-- Статус бар -->
+        <div class="status-bar">
             <span id="status-text">System ready. Select file to begin.</span>
             <span id="sub-badge" style="color:#888;">SUBSCRIPTION: LOADING...</span>
         </div>
 
-        <!-- Терминал --><div class="terminal" id="terminal">
+        <!-- Терминал -->
+        <div class="terminal" id="terminal">
             <div class="sys">> Initializing core modules... OK</div>
             <div class="sys">> Connected to Firebase Cloud... OK</div>
         </div>
 
-        <!-- Боковая панель (Скрыта) --><div class="feed-panel" id="feedPanel">
+        <!-- Боковая панель (Скрыта) -->
+        <div class="feed-panel" id="feedPanel">
             <div style="color:orange; margin-bottom:10px; font-weight:bold;">GLOBAL THREATS</div>
             <div id="feed" style="overflow-y:auto; flex:1;">Loading...</div>
             <button onclick="toggleFeed()" style="margin-top:10px; background:#333; color:#fff; border:none; padding:5px; cursor:pointer;">CLOSE</button>
         </div>
     </div>
 
-    <!-- Вердикт --><div id="verdict" class="verdict-modal">
+    <!-- Вердикт -->
+    <div id="verdict" class="verdict-modal">
         <div class="v-title-text">SCAN RESULT</div>
         <div id="v-score" class="v-score">CLEAN</div>
         <div id="v-desc">No threats detected.</div>
@@ -236,9 +248,11 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
+        // Я ВРУЧНУЮ ДОБАВИЛ databaseURL СЮДА 👇
         const firebaseConfig = {
             apiKey: "AIzaSyDYQgJa7rlB_CAB4ywufavumzZrsS_pqNc",
             authDomain: "antivirus-1f569.firebaseapp.com",
+            databaseURL: "https://antivirus-1f569-default-rtdb.firebaseio.com",
             projectId: "antivirus-1f569",
             storageBucket: "antivirus-1f569.firebasestorage.app",
             messagingSenderId: "780704862578",
@@ -382,15 +396,15 @@
             
             const v = document.getElementById('verdict');
             const vs = document.getElementById('v-score');
-            const vd = document.getElementById('v-desc'); // Получаем элемент описания
+            const vd = document.getElementById('v-desc');
             v.style.display = "block";
             
             if(score === 0) {
                 v.style.borderColor="lime"; vs.innerText="CLEAN"; vs.style.color="lime";
-                vd.innerText="No threats detected."; // Устанавливаем текст для чистого файла
+                vd.innerText="No threats detected.";
             } else {
                 v.style.borderColor="red"; vs.innerText="INFECTED"; vs.style.color="red";
-                vd.innerText=`Threat Score: ${score}.`; // Устанавливаем текст и счет для инфицированного файла
+                vd.innerText=`Threat Score: ${score}.`;
             }
 
             push(ref(db, 'scans'), {
