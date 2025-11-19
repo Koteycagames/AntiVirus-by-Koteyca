@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIRUS HUNTER v9.4</title>
+    <title>VIRUS HUNTER v9.5</title>
     <style>
         body {
             background-color: #000;
@@ -58,7 +58,7 @@
             text-shadow: 0 0 10px #00ff00;
         }
 
-        /* Панель управления - ОДНА СТРОКА */
+        /* Панель управления */
         .control-bar {
             display: flex;
             background: #111;
@@ -110,7 +110,6 @@
         }
         .user-badge { color: gold; }
 
-        /* Терминал */
         .terminal {
             width: 900px;
             max-width: 95%;
@@ -129,20 +128,32 @@
         .sys { color: #555; }
         .decrypt { color: #d600ff; }
 
-        /* --- ВЕРДИКТ --- */
+        /* --- ВЕРДИКТ (С ДЕТАЛЯМИ) --- */
         .verdict-modal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95); border: 2px solid #fff; padding: 40px; text-align: center; z-index: 100;
+            background: rgba(0,0,0,0.95); border: 2px solid #fff; padding: 30px; text-align: center; z-index: 100;
             box-shadow: 0 0 30px rgba(255,255,255,0.2);
-            width: 300px;
+            width: 350px;
         }
         .v-title-text { color:#888; font-size:16px; }
-        .v-score { font-size: 40px; font-weight: bold; margin: 15px 0; }
-        .v-desc { 
-            color: #00ff00; 
-            margin-bottom: 30px; 
-            font-size: 14px; 
+        .v-score { font-size: 40px; font-weight: bold; margin: 10px 0; }
+        .v-desc { color: #00ff00; margin-bottom: 15px; font-size: 14px; }
+        
+        /* Список найденных угроз */
+        .v-details-box {
+            background: #111;
+            border: 1px solid #333;
+            padding: 10px;
+            margin-bottom: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 12px;
+            display: none; /* Скрыто если чисто */
         }
+        .v-details-list { list-style: none; padding: 0; margin: 0; }
+        .v-details-list li { color: #ff5555; margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 2px;}
+
         .btn-close { background: transparent; border: 1px solid #fff; color: #fff; padding: 8px 25px; cursor: pointer; font-family: inherit; }
         .btn-close:hover { background: #fff; color: #000; }
 
@@ -187,17 +198,14 @@
     <!-- ПРИЛОЖЕНИЕ -->
     <div id="app-screen">
         
-        <!-- Меню справа сверху -->
         <div class="top-menu">
             <span id="user-display" style="color:#444; margin-right:10px;">...</span>
             <button class="menu-btn" onclick="toggleFeed()">FEED</button>
             <button class="menu-btn" onclick="doLogout()">EXIT</button>
         </div>
 
-        <!-- Заголовок -->
-        <h1>🧬 VIRUS HUNTER v9.4</h1>
+        <h1>🧬 VIRUS HUNTER v9.5</h1>
 
-        <!-- ПАНЕЛЬ УПРАВЛЕНИЯ -->
         <div class="control-bar">
             <select id="targetType" title="Target Type">
                 <option value="bat">Batch (.bat)</option>
@@ -215,19 +223,16 @@
             <button id="btnScan" disabled onclick="startScanLogic()">ЗАПУСК</button>
         </div>
 
-        <!-- Статус бар -->
         <div class="status-bar">
             <span id="status-text">System ready. Select file to begin.</span>
             <span id="sub-badge" style="color:#888;">SUBSCRIPTION: LOADING...</span>
         </div>
 
-        <!-- Терминал -->
         <div class="terminal" id="terminal">
             <div class="sys">> Initializing core modules... OK</div>
             <div class="sys">> Connected to Firebase Cloud... OK</div>
         </div>
 
-        <!-- Боковая панель (Скрыта) -->
         <div class="feed-panel" id="feedPanel">
             <div style="color:orange; margin-bottom:10px; font-weight:bold;">GLOBAL THREATS</div>
             <div id="feed" style="overflow-y:auto; flex:1;">Loading...</div>
@@ -235,11 +240,18 @@
         </div>
     </div>
 
-    <!-- Вердикт -->
+    <!-- ВЕРДИКТ (ОБНОВЛЕННЫЙ) -->
     <div id="verdict" class="verdict-modal">
         <div class="v-title-text">SCAN RESULT</div>
         <div id="v-score" class="v-score">CLEAN</div>
         <div id="v-desc">No threats detected.</div>
+        
+        <!-- НОВЫЙ БЛОК ДЛЯ СПИСКА УГРОЗ -->
+        <div id="v-details" class="v-details-box">
+            <div style="color:#888; margin-bottom:5px; border-bottom:1px solid #333;">THREAT REPORT:</div>
+            <ul id="v-list" class="v-details-list"></ul>
+        </div>
+
         <button class="btn-close" onclick="document.getElementById('verdict').style.display='none'">CLOSE</button>
     </div>
 
@@ -248,7 +260,6 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-        // Я ВРУЧНУЮ ДОБАВИЛ databaseURL СЮДА 👇
         const firebaseConfig = {
             apiKey: "AIzaSyDYQgJa7rlB_CAB4ywufavumzZrsS_pqNc",
             authDomain: "antivirus-1f569.firebaseapp.com",
@@ -269,7 +280,6 @@
         window.toggleFeed = () => document.getElementById('feedPanel').classList.toggle('open');
         window.doLogout = () => signOut(auth);
 
-        // AUTH
         onAuthStateChanged(auth, (user) => {
             if(user) {
                 document.getElementById('auth-screen').style.display = 'none';
@@ -300,7 +310,6 @@
             });
         }
 
-        // LOGIN/REG
         document.getElementById('btnLogin').onclick = () => {
             signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value)
             .catch(e => { document.getElementById('auth-error').innerText = "Login Failed"; document.getElementById('auth-error').style.display='block'; });
@@ -313,7 +322,6 @@
             .catch(e => alert(e.message));
         };
 
-        // SIGNATURES
         const batRules = [
             { regex: /format\s/i, msg: "FORMAT DISK", score: 10 },
             { regex: /del\s|erase\s/i, msg: "DELETE FILE", score: 2 },
@@ -364,9 +372,10 @@
             let acc = mode==='fast'?0.5:(mode==='auto'?0.8:1.0);
             let idx = 0;
             let score = 0;
+            let uniqueThreats = new Set(); // Собираем уникальные угрозы
 
             function step() {
-                if(idx >= fileLines.length) { finish(score, mode); return; }
+                if(idx >= fileLines.length) { finish(score, mode, uniqueThreats); return; }
                 let line = fileLines[idx].trim();
                 
                 if(mode==='full' && type==='bat' && line.includes('^')) {
@@ -379,6 +388,7 @@
                         if(r.regex.test(line) && Math.random()<=acc) {
                             score += r.score;
                             log(`DETECTED: ${r.msg}`, "danger");
+                            uniqueThreats.add(r.msg); // Добавляем в список
                             break;
                         }
                     }
@@ -389,7 +399,8 @@
             step();
         };
 
-        function finish(score, mode) {
+        // Обновили finish, чтобы принимал список угроз
+        function finish(score, mode, threats) {
             document.getElementById('btnScan').disabled = false;
             const status = score > 0 ? "INFECTED" : "CLEAN";
             log(`RESULT: ${status}`, score>0?"danger":"");
@@ -397,14 +408,27 @@
             const v = document.getElementById('verdict');
             const vs = document.getElementById('v-score');
             const vd = document.getElementById('v-desc');
-            v.style.display = "block";
+            const vDetails = document.getElementById('v-details');
+            const vList = document.getElementById('v-list');
             
+            v.style.display = "block";
+            vList.innerHTML = ""; // Очистка списка
+
             if(score === 0) {
                 v.style.borderColor="lime"; vs.innerText="CLEAN"; vs.style.color="lime";
                 vd.innerText="No threats detected.";
+                vDetails.style.display = "none"; // Прячем список
             } else {
                 v.style.borderColor="red"; vs.innerText="INFECTED"; vs.style.color="red";
                 vd.innerText=`Threat Score: ${score}.`;
+                vDetails.style.display = "block"; // Показываем список
+                
+                // Заполняем список уникальными угрозами
+                threats.forEach(msg => {
+                    let li = document.createElement("li");
+                    li.innerText = "• " + msg;
+                    vList.appendChild(li);
+                });
             }
 
             push(ref(db, 'scans'), {
