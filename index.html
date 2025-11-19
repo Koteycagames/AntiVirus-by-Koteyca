@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIRUS HUNTER v9.2</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #00ff00;
+            font-family: 'Consolas', 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden; /* Чтобы не скроллилось лишнее */
+        }
+
+        /* --- 1. ЭКРАН ВХОДА --- */
+        #auth-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            background: #050505;
+        }
+        .auth-box {
+            border: 1px solid #00ff00;
+            padding: 30px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.1);
+        }
+        .auth-input {
+            width: 100%; padding: 10px; margin-bottom: 10px; background: #000; 
+            border: 1px solid #333; color: #00ff00; box-sizing: border-box; font-family: inherit;
+        }
+        .auth-btn {
+            width: 100%; padding: 10px; background: #004400; color: #fff; 
+            border: none; cursor: pointer; font-weight: bold; margin-bottom: 5px; font-family: inherit;
+        }
+        .auth-btn:hover { background: #00ff00; color: #000; }
+
+        /* --- 2. ГЛАВНЫЙ ЭКРАН --- */
+        #app-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            position: relative;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 24px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .control-bar {
+            display: flex;
+            background: #111;
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 3px;
+            gap: 5px;
+            width: 900px;
+            max-width: 95%;
+            box-sizing: border-box;
+        }
+
+        select, input[type="file"], button {
+            background: #222;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 14px;
+            height: 40px;
+            box-sizing: border-box;
+        }
+
+        #targetType { width: 130px; }
+        #fileInput { flex-grow: 1; color: #aaa; }
+        #scanMode { width: 180px; }
+        
+        #btnScan {
+            background: #006400;
+            color: #fff;
+            border: none;
+            font-weight: bold;
+            width: 120px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        #btnScan:hover { background: #00ff00; color: #000; }
+        #btnScan:disabled { background: #333; color: #555; cursor: not-allowed; }
+
+        .status-bar {
+            width: 900px;
+            max-width: 95%;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+        .user-badge { color: gold; }
+
+        .terminal {
+            width: 900px;
+            max-width: 95%;
+            height: 400px;
+            border: 1px solid #00ff00;
+            background: #000;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 14px;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.05);
+        }
+
+        .log-line { margin-bottom: 4px; }
+        .danger { color: #ff3333; }
+        .sys { color: #555; }
+        .decrypt { color: #d600ff; }
+
+        /* --- ВЕРДИКТ (Исправлено) --- */
+        .verdict-modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95); border: 2px solid #fff; padding: 40px; text-align: center; z-index: 100;
+            box-shadow: 0 0 30px rgba(255,255,255,0.2);
+            width: 300px; /* Фиксированная ширина */
+        }
+        .v-title-text { color:#888; font-size:16px; }
+        .v-score { font-size: 40px; font-weight: bold; margin: 15px 0; } /* Уменьшил margin-top */
+        .v-desc { 
+            color: #00ff00; 
+            margin-bottom: 25px; /* УВЕЛИЧИЛ ОТСТУП */
+            font-size: 14px; /* Уменьшил размер */
+        }
+        .btn-close { background: transparent; border: 1px solid #fff; color: #fff; padding: 5px 20px; cursor: pointer; }
+
+        /* --- КНОПКИ ВЕРХНЕГО МЕНЮ --- */
+        .top-menu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 12px;
+        }
+        .menu-btn {
+            background: none; border: 1px solid #333; color: #666; padding: 4px 8px; cursor: pointer; margin-left: 5px;
+        }
+        .menu-btn:hover { border-color: #00ff00; color: #00ff00; }
+        
+        /* ФИД СПРАВА */
+        .feed-panel {
+            position: fixed; top: 0; right: 0; bottom: 0; width: 300px;
+            background: #111; border-left: 1px solid #00ff00;
+            z-index: 50; display: none; flex-direction: column; padding: 10px;
+        }
+        .feed-panel.open { display: flex; }
+        .feed-item { background: #1a1a1a; padding: 5px; margin-bottom: 5px; border-left: 2px solid #555; font-size: 12px; color: #ccc; }
+        .feed-item.infected { border-color: red; }
+
+    </style>
+</head>
+<body>
+
+    <!-- ВХОД --><div id="auth-screen">
+        <div class="auth-box">
+            <h2 style="margin:0 0 20px 0; color:#00ff00;">SYSTEM LOGIN</h2>
+            <input type="email" id="email" class="auth-input" placeholder="Email">
+            <input type="password" id="password" class="auth-input" placeholder="Password">
+            <button class="auth-btn" id="btnLogin">CONNECT</button>
+            <button class="auth-btn" style="background:#222;" id="btnRegister">REGISTER</button>
+            <div id="auth-error" style="color:red; margin-top:10px; display:none;">Error</div>
+        </div>
+    </div>
+
+    <!-- ПРИЛОЖЕНИЕ --><div id="app-screen">
+        
+        <!-- Меню справа сверху (Выход, Фид) --><div class="top-menu">
+            <span id="user-display" style="color:#444; margin-right:10px;">...</span>
+            <button class="menu-btn" onclick="toggleFeed()">FEED</button>
+            <button class="menu-btn" onclick="doLogout()">EXIT</button>
+        </div>
+
+        <!-- Заголовок --><h1>🧬 VIRUS HUNTER v9.2</h1>
+
+        <!-- ПАНЕЛЬ УПРАВЛЕНИЯ (В ОДНУ СТРОКУ) --><div class="control-bar">
+            <!-- 1. Выбор типа (Python/Bat) --><select id="targetType" title="Target Type">
+                <option value="bat">Batch (.bat)</option>
+                <option value="py">Python (.py)</option>
+            </select>
+
+            <!-- 2. Выбор файла --><input type="file" id="fileInput">
+
+            <!-- 3. Режим --><select id="scanMode" title="Scan Mode">
+                <option value="fast">Fast Scan</option>
+                <option value="auto" disabled>Auto (Smart) [LOCK]</option>
+                <option value="full" disabled>Full (Deep) [LOCK]</option>
+            </select>
+
+            <!-- 4. Кнопка --><button id="btnScan" disabled onclick="startScanLogic()">ЗАПУСК</button>
+        </div>
+
+        <!-- Статус бар --><div class="status-bar">
+            <span id="status-text">System ready. Select file to begin.</span>
+            <span id="sub-badge" style="color:#888;">SUBSCRIPTION: LOADING...</span>
+        </div>
+
+        <!-- Терминал --><div class="terminal" id="terminal">
+            <div class="sys">> Initializing core modules... OK</div>
+            <div class="sys">> Connected to Firebase Cloud... OK</div>
+        </div>
+
+        <!-- Боковая панель (Скрыта) --><div class="feed-panel" id="feedPanel">
+            <div style="color:orange; margin-bottom:10px; font-weight:bold;">GLOBAL THREATS</div>
+            <div id="feed" style="overflow-y:auto; flex:1;">Loading...</div>
+            <button onclick="toggleFeed()" style="margin-top:10px; background:#333; color:#fff; border:none; padding:5px; cursor:pointer;">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Вердикт --><div id="verdict" class="verdict-modal">
+        <div class="v-title-text">SCAN RESULT</div>
+        <div id="v-score" class="v-score">CLEAN</div>
+        <div id="v-desc">No threats detected.</div>
+        <button class="btn-close" onclick="document.getElementById('verdict').style.display='none'">CLOSE</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDYQgJa7rlB_CAB4ywufavumzZrsS_pqNc",
+            authDomain: "antivirus-1f569.firebaseapp.com",
+            projectId: "antivirus-1f569",
+            storageBucket: "antivirus-1f569.firebasestorage.app",
+            messagingSenderId: "780704862578",
+            appId: "1:780704862578:web:a3f4eafe292a00ace8cdeb"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let fileLines = [];
+        let fileName = "";
+
+        window.toggleFeed = () => document.getElementById('feedPanel').classList.toggle('open');
+        window.doLogout = () => signOut(auth);
+
+        // AUTH
+        onAuthStateChanged(auth, (user) => {
+            if(user) {
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('app-screen').style.display = 'flex';
+                document.getElementById('user-display').innerText = user.email;
+                loadUser(user.uid);
+                listenFeed();
+            } else {
+                document.getElementById('auth-screen').style.display = 'flex';
+                document.getElementById('app-screen').style.display = 'none';
+            }
+        });
+
+        function loadUser(uid) {
+            onValue(ref(db, 'Users/'+uid), (s) => {
+                const d = s.val();
+                const sub = (d && d.Subscribe) ? d.Subscribe : 'default';
+                document.getElementById('sub-badge').innerText = `SUBSCRIPTION: ${sub.toUpperCase()}`;
+                
+                const oA = document.querySelector('option[value="auto"]');
+                const oF = document.querySelector('option[value="full"]');
+                
+                oA.disabled=true; oA.innerText="Auto [LOCK]";
+                oF.disabled=true; oF.innerText="Full [LOCK]";
+                
+                if(sub === 'Auto' || sub === 'Full') { oA.disabled=false; oA.innerText="Auto (Smart)"; }
+                if(sub === 'Full') { oF.disabled=false; oF.innerText="Full (Deep + Decrypt)"; }
+            });
+        }
+
+        // LOGIN/REG
+        document.getElementById('btnLogin').onclick = () => {
+            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value)
+            .catch(e => { document.getElementById('auth-error').innerText = "Login Failed"; document.getElementById('auth-error').style.display='block'; });
+        };
+        document.getElementById('btnRegister').onclick = () => {
+            const e = document.getElementById('email').value, p = document.getElementById('password').value;
+            if(p.length<6) return alert("Password min 6 chars");
+            createUserWithEmailAndPassword(auth, e, p)
+            .then(c => set(ref(db, 'Users/'+c.user.uid), {email:e, Subscribe:"default"}))
+            .catch(e => alert(e.message));
+        };
+
+        // SIGNATURES
+        const batRules = [
+            { regex: /format\s/i, msg: "FORMAT DISK", score: 10 },
+            { regex: /del\s|erase\s/i, msg: "DELETE FILE", score: 2 },
+            { regex: /start\s/i, msg: "START PROCESS", score: 1 },
+            { regex: /%0/i, msg: "FORK BOMB", score: 10 },
+            { regex: /reg add|reg delete/i, msg: "REGISTRY EDIT", score: 8 }
+        ];
+        const pyRules = [
+            { regex: /os\.remove|shutil\.rmtree/i, msg: "PY: DELETE FILE", score: 3 },
+            { regex: /ctypes\.windll|BlockInput/i, msg: "PY: BLOCK INPUT", score: 10 },
+            { regex: /pynput|keyboard\.hook/i, msg: "PY: KEYLOGGER", score: 5 },
+            { regex: /socket|requests\.post/i, msg: "PY: STEAL DATA", score: 2 }
+        ];
+
+        document.getElementById('fileInput').onchange = (e) => {
+            const f = e.target.files[0];
+            if(f) {
+                fileName = f.name;
+                const r = new FileReader();
+                r.onload = (ev) => {
+                    fileLines = ev.target.result.split('\n');
+                    document.getElementById('btnScan').disabled = false;
+                    log(`Loaded: ${fileName} (${fileLines.length} lines)`);
+                    document.getElementById('status-text').innerText = `Ready to scan: ${fileName}`;
+                };
+                r.readAsText(f, 'CP866');
+            }
+        };
+
+        function log(t, c="") {
+            const term = document.getElementById('terminal');
+            term.innerHTML += `<div class="log-line ${c}">> ${t}</div>`;
+            term.scrollTop = term.scrollHeight;
+        }
+
+        window.startScanLogic = () => {
+            const mode = document.getElementById('scanMode').value;
+            const type = document.getElementById('targetType').value;
+            const rules = (type === 'py') ? pyRules : batRules;
+            
+            document.getElementById('btnScan').disabled = true;
+            document.getElementById('terminal').innerHTML = "";
+            document.getElementById('verdict').style.display = "none";
+            
+            log(`SCAN STARTED. MODE: ${mode.toUpperCase()}`);
+
+            let delay = mode==='full'?20:5;
+            let acc = mode==='fast'?0.5:(mode==='auto'?0.8:1.0);
+            let idx = 0;
+            let score = 0;
+
+            function step() {
+                if(idx >= fileLines.length) { finish(score, mode); return; }
+                let line = fileLines[idx].trim();
+                
+                if(mode==='full' && type==='bat' && line.includes('^')) {
+                    line = line.replaceAll('^', '');
+                    if(Math.random()>0.9) log("Decrypting code...", "decrypt");
+                }
+
+                if(line && !line.startsWith('rem') && !line.startsWith('#')) {
+                    for(const r of rules) {
+                        if(r.regex.test(line) && Math.random()<=acc) {
+                            score += r.score;
+                            log(`DETECTED: ${r.msg}`, "danger");
+                            break;
+                        }
+                    }
+                }
+                idx++;
+                setTimeout(step, delay);
+            }
+            step();
+        };
+
+        function finish(score, mode) {
+            document.getElementById('btnScan').disabled = false;
+            const status = score > 0 ? "INFECTED" : "CLEAN";
+            log(`RESULT: ${status}`, score>0?"danger":"");
+            
+            const v = document.getElementById('verdict');
+            const vs = document.getElementById('v-score');
+            const vd = document.getElementById('v-desc'); // Получаем элемент описания
+            v.style.display = "block";
+            
+            if(score === 0) {
+                v.style.borderColor="lime"; vs.innerText="CLEAN"; vs.style.color="lime";
+                vd.innerText="No threats detected."; // Устанавливаем текст для чистого файла
+            } else {
+                v.style.borderColor="red"; vs.innerText="INFECTED"; vs.style.color="red";
+                vd.innerText=`Threat Score: ${score}.`; // Устанавливаем текст и счет для инфицированного файла
+            }
+
+            push(ref(db, 'scans'), {
+                filename: fileName, score: score, status: status, mode: mode,
+                user: document.getElementById('user-display').innerText, timestamp: Date.now()
+            });
+        }
+
+        function listenFeed() {
+            onValue(ref(db, 'scans'), (s) => {
+                const f = document.getElementById('feed');
+                f.innerHTML = "";
+                const d = s.val();
+                if(!d) return;
+                Object.values(d).reverse().slice(0,15).forEach(i => {
+                    const c = i.score>0?"infected":"";
+                    f.innerHTML += `<div class="feed-item ${c}"><b>${i.filename}</b><br>${i.status} (${i.user?i.user.split('@')[0]:'?'})</div>`;
+                });
+            });
+        }
+    </script>
+</body>
+</html>
