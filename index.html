@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER SECURITY HUB v16.2</title>
+    <title>CYBER SECURITY HUB v16.3</title>
     <!-- Библиотеки -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
@@ -69,7 +69,7 @@
         }
         .hub-card:hover { border-color: #00ff00; box-shadow: 0 0 20px rgba(0,255,0,0.3); transform: translateY(-5px); }
         
-        /* Стили для заблокированных карточек */
+        /* Стили для заблокированных */
         .hub-card.locked { opacity: 0.4; filter: grayscale(100%); border-color: #555; cursor: not-allowed; }
         .hub-card.locked:hover { transform: none; box-shadow: none; border-color: #555; }
         .lock-icon { position: absolute; top: 10px; right: 10px; font-size: 1.2em; color: #fff; display: none; }
@@ -91,6 +91,10 @@
         .control-bar { display: flex; background: #111; border: 1px solid #333; padding: 10px; border-radius: 3px; gap: 5px; width: 1000px; max-width: 95%; box-sizing: border-box; }
         select, input[type="file"], input[type="text"], button { background: #222; color: #e0e0e0; border: 1px solid #444; padding: 8px 12px; font-family: inherit; font-size: 14px; height: 40px; box-sizing: border-box; }
         #targetType { width: 180px; } #fileInput { flex-grow: 1; color: #aaa; } #scanMode { width: 160px; }
+        
+        /* Опции с замком */
+        option:disabled { color: #555; background: #111; }
+
         #btnScan { background: #006400; color: #fff; border: none; font-weight: bold; width: 120px; cursor: pointer; transition: 0.2s; }
         #btnScan:hover { background: #00ff00; color: #000; }
         #btnScan:disabled { background: #333; color: #555; cursor: not-allowed; }
@@ -102,7 +106,9 @@
             min-height: 150px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; font-size: 14px; color: #ccc; margin-top: 10px;
         }
         .action-bar { display: flex; gap: 10px; margin-bottom: 10px; }
-        
+        .key-val { margin-bottom: 5px; border-bottom: 1px dashed #333; padding-bottom: 2px; }
+        .key { color: #00ff00; font-weight: bold; margin-right: 10px; }
+
         /* Меню и кнопки */
         .top-menu { position: absolute; top: 20px; right: 20px; z-index: 100;}
         .menu-btn { background: #111; border: 1px solid #333; color: #666; padding: 5px 10px; cursor: pointer; margin-left: 5px; font-family: inherit; }
@@ -163,7 +169,7 @@
         <div class="user-welcome">ПОЛЬЗОВАТЕЛЬ: <span id="user-display">...</span> | <span onclick="doLogout()" style="cursor:pointer; text-decoration:underline;">ВЫХОД</span></div>
         
         <div class="dashboard-container">
-            <div class="hub-title">ГЛАВНОЕ МЕНЮ v16.2</div>
+            <div class="hub-title">ГЛАВНОЕ МЕНЮ v16.3</div>
             <div class="hub-grid">
                 <!-- 1. VIRUS (ALL) -->
                 <div class="hub-card" id="card-virus" onclick="openTool('virus')">
@@ -217,15 +223,17 @@
             <select id="targetType" title="Тип">
                 <option value="bat">Batch (.bat)</option>
                 <option value="py">Python (.py)</option>
-                <option value="exe">Binary (.exe)</option>
-                <option value="jar">Java (.jar)</option>
                 <option value="vbs">VBScript (.vbs)</option>
                 <option value="ps1">PowerShell</option>
-                <option value="web">Web (.js/.html)</option>
-                <option value="zip">Архив (.zip)</option>
+                
+                <!-- Заблокированные в Default -->
+                <option value="exe" disabled>Binary (.exe) [LOCK]</option>
+                <option value="jar" disabled>Java (.jar) [LOCK]</option>
+                <option value="web" disabled>Web (.js/.html) [LOCK]</option>
+                <option value="zip" disabled>Архив (.zip) [LOCK]</option>
             </select>
             <input type="file" id="fileInput">
-            <select id="scanMode"><option value="fast">Быстрое</option><option value="auto" disabled>Авто [ЗАКРЫТО]</option><option value="full" disabled>Полное [ЗАКРЫТО]</option></select>
+            <select id="scanMode"><option value="fast">Быстрое</option><option value="auto" disabled>Авто [LOCK]</option><option value="full" disabled>Полное [LOCK]</option></select>
             <button id="btnScan" disabled onclick="startScanLogic()">ЗАПУСК</button>
         </div>
         <div class="terminal" id="terminal"><div class="sys">> Модуль готов к работе.</div></div>
@@ -417,12 +425,14 @@
                     const sub = (s.val() && s.val().Subscribe) ? s.val().Subscribe : 'default';
                     currentUserSub = sub;
                     
-                    // 1. VIRUS HUNTER MODES
+                    // 1. VIRUS HUNTER MODES & FILES
                     const oA = document.querySelector('option[value="auto"]'), oF = document.querySelector('option[value="full"]');
                     oA.disabled=true; oA.innerText="Авто [ЗАКРЫТО]"; oF.disabled=true; oF.innerText="Полное [ЗАКРЫТО]";
                     if(sub==='Auto'||sub==='Full') { oA.disabled=false; oA.innerText="Авто"; }
                     if(sub==='Full') { oF.disabled=false; oF.innerText="Полное"; }
                     
+                    updateVirusAccess(sub); // Обновляем список файлов
+
                     // 2. DASHBOARD LOCKS
                     updateHubLocks(sub);
                 });
@@ -440,10 +450,8 @@
                 'crypto': document.getElementById('card-crypto')
             };
 
-            // Reset
             for (let k in cards) cards[k].classList.remove('locked');
 
-            // Apply Locks
             if (sub === 'default') {
                 cards['osint'].classList.add('locked');
                 cards['exif'].classList.add('locked');
@@ -452,6 +460,32 @@
                 cards['exif'].classList.add('locked');
                 cards['crypto'].classList.add('locked');
             }
+        }
+
+        function updateVirusAccess(sub) {
+            const select = document.getElementById('targetType');
+            const opts = select.options;
+
+            // default: bat
+            // Auto: bat, py, vbs, ps1
+            // Full: all
+            const allowedDefault = ['bat'];
+            const allowedAuto = ['bat', 'py', 'vbs', 'ps1'];
+
+            for(let i=0; i<opts.length; i++) {
+                let val = opts[i].value;
+                let label = opts[i].text.replace(/ \[LOCK\]/g, '');
+                let disabled = true;
+
+                if(sub === 'Full') disabled = false;
+                else if(sub === 'Auto' && allowedAuto.includes(val)) disabled = false;
+                else if(sub === 'default' && allowedDefault.includes(val)) disabled = false;
+
+                opts[i].disabled = disabled;
+                opts[i].text = label + (disabled ? " [LOCK]" : "");
+            }
+            // Сброс на bat, если выбран недоступный
+            if(select.selectedOptions[0].disabled) select.value = 'bat';
         }
 
         document.getElementById('btnLogin').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value).catch(e=>alert("Ошибка входа"));
@@ -495,7 +529,7 @@
             if(t==='exe'||t==='jar'){
                 const r=new FileReader();r.onload=(e)=>{const txt=e.target.result;if(txt.includes("ShellExecute")||txt.includes("cmd.exe")){maxL=2;fT.push({msg:"ПОДОЗРИТЕЛЬНЫЕ СТРОКИ",level:2});}finish(maxL,m,fT);};r.readAsText(fileRawData,'ISO-8859-1');return;
             }
-            let i=0;function step(){if(i>=fileLines.length){finish(maxL,m,fT);return;}let l=fileLines[i].trim();if(m==='full'&&(t==='bat'||t==='vbs')&&l.includes('^')){l=l.replaceAll('^','');if(Math.random()>0.9)log("ДЕШИФРОВКА...","decrypt");}if(l.length>3&&!l.startsWith('rem')){for(const r of rules){if(r.regex.test(l)){if(r.level>maxL)maxL=r.level;fT.push({msg:r.msg,level:r.level});log(`DETECTED: ${r.msg}`,`level-${r.level}`);break;}}}i++;setTimeout(step,2);}step();
+            let i=0;function step(){if(i>=fileLines.length){finish(maxL,m,fT);return;}let l=fileLines[i].trim();if(m==='full'&&(t==='bat'||t==='vbs')&&l.includes('^')){l=l.replaceAll('^','');if(Math.random()>0.9)log("ДЕШИФРОВКА...","decrypt");}if(l.length>3&&!l.startsWith('rem')){for(const r of rules){if(r.regex.test(l)){if(r.level>maxL)maxL=r.level;fT.push({msg:r.msg,level:r.level});log(`ОБНАРУЖЕНО: ${r.msg}`,`level-${r.level}`);break;}}}i++;setTimeout(step,2);}step();
         };
         function finish(l,m,t){
             document.getElementById('btnScan').disabled=false; let s="ЧИСТО",c="lime";
@@ -525,7 +559,7 @@
         }
         function showRickResult(t,title,desc){const r=document.getElementById('rick-result');let c=t==="DANGER"?"red":(t==="SAFE"?"lime":"orange");r.style.borderColor=c;r.style.color=c;r.innerHTML=`<div style="font-size:1.4em; font-weight:bold;">${title}</div><div style="color:#ccc;">${desc}</div>`;}
 
-        // --- 3. OSINT (UPDATED with WHOIS) ---
+        // --- 3. OSINT ---
         window.updateOsintPlaceholder = () => {
             const t = document.getElementById('osintType').value;
             const i = document.getElementById('osintInput');
@@ -537,13 +571,12 @@
             const res=document.getElementById('osint-result'); if(!v)return;
             res.innerHTML="Сканирование..."; await new Promise(r=>setTimeout(r,1000));
             
-            if(t==='ip'){try{const q=await fetch(`https://ipwho.is/${v}`);const d=await q.json();res.innerHTML=`IP: ${d.ip}\nLoc: ${d.city}, ${d.country}\nISP: ${d.connection.isp}`;}catch{res.innerHTML="Ошибка сети.";}}
+            if(t==='ip'){try{const q=await fetch(`https://ipwho.is/${v}`);const d=await q.json();res.innerHTML=`IP: ${d.ip}\nГород: ${d.city}, ${d.country}\nПровайдер: ${d.connection.isp}`;}catch{res.innerHTML="Ошибка сети.";}}
             else if(t==='port'){ res.innerHTML=`Порт ${v.split(':')[1]}: ПРОВЕРЕН.\nСтатус: ФИЛЬТР (Браузерное ограничение)`; }
             else if(t==='whois'){ 
-                // Используем RDAP (JSON Whois)
                 try{const q=await fetch(`https://rdap.org/domain/${v}`); const d=await q.json();
                 res.innerHTML=`ДОМЕН: ${d.handle}\nСТАТУС: ${d.status?d.status.join(', '):'N/A'}\nПОРТ 43: ${d.port43 || 'N/A'}`;}
-                catch{res.innerHTML=`WHOIS недоступен для ${v} через браузер.`;}
+                catch{res.innerHTML=`WHOIS недоступен для ${v}.`;}
             }
             else { res.innerHTML=`Анализ ${v}: ФОРМАТ ВЕРЕН.`; }
         }
@@ -596,7 +629,7 @@
                     out = inp.replace(/[a-zA-Z]/g, c => String.fromCharCode((c<="Z"?90:122)>=(c=c.charCodeAt(0)+s)?c:c-26));
                 }
                 r.innerText = out;
-            } catch(e) { r.innerText = "Ошибка декодирования!"; }
+            } catch(e) { r.innerText = "Ошибка!"; }
         }
 
     </script>
