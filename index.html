@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIRUS HUNTER v13.0</title>
+    <title>VIRUS HUNTER v13.2 (RU)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body {
@@ -16,14 +16,14 @@
             overflow: hidden;
         }
 
-        /* --- 1. AUTH SCREEN --- */
+        /* --- 1. ЭКРАН ВХОДА --- */
         #auth-screen { display: flex; justify-content: center; align-items: center; height: 100%; background: #050505; }
         .auth-box { border: 1px solid #00ff00; padding: 30px; width: 300px; text-align: center; box-shadow: 0 0 15px rgba(0, 255, 0, 0.1); }
         .auth-input { width: 100%; padding: 10px; margin-bottom: 10px; background: #000; border: 1px solid #333; color: #00ff00; box-sizing: border-box; font-family: inherit; }
         .auth-btn { width: 100%; padding: 10px; background: #004400; color: #fff; border: none; cursor: pointer; font-weight: bold; margin-bottom: 5px; font-family: inherit; }
         .auth-btn:hover { background: #00ff00; color: #000; }
 
-        /* --- 2. APP SCREEN --- */
+        /* --- 2. ГЛАВНЫЙ ЭКРАН --- */
         #app-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; position: relative; }
         h1 { margin-bottom: 30px; font-size: 24px; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 10px #00ff00; }
 
@@ -31,7 +31,7 @@
         select, input[type="file"], button { background: #222; color: #e0e0e0; border: 1px solid #444; padding: 8px 12px; font-family: inherit; font-size: 14px; height: 40px; box-sizing: border-box; }
         #targetType { width: 180px; }
         #fileInput { flex-grow: 1; color: #aaa; }
-        #scanMode { width: 160px; }
+        #scanMode { width: 200px; }
         #btnScan { background: #006400; color: #fff; border: none; font-weight: bold; width: 120px; cursor: pointer; transition: 0.2s; }
         #btnScan:hover { background: #00ff00; color: #000; }
         #btnScan:disabled { background: #333; color: #555; cursor: not-allowed; }
@@ -40,17 +40,16 @@
         .terminal { width: 1000px; max-width: 95%; height: 450px; border: 1px solid #00ff00; background: #000; padding: 15px; overflow-y: auto; font-size: 14px; box-sizing: border-box; box-shadow: 0 0 10px rgba(0, 255, 0, 0.05); }
         .log-line { margin-bottom: 4px; word-break: break-all; }
         
-        /* Цвета логов по уровням */
-        .level-1 { color: #ffff00; } /* Suspicious (Yellow) */
-        .level-2 { color: #ff8800; } /* Dangerous (Orange) */
-        .level-3 { color: #ff0000; font-weight: bold; } /* Very Dangerous (Red) */
+        .level-1 { color: #ffff00; } /* Подозрительно */
+        .level-2 { color: #ff8800; } /* Опасно */
+        .level-3 { color: #ff0000; font-weight: bold; } /* Критично */
         .sys { color: #555; }
         .info { color: #00ffff; }
         .decrypt { color: #d600ff; }
         .zip-entry { color: #ffff00; border-top: 1px dashed #333; margin-top: 5px; padding-top: 2px; }
 
         /* --- VERDICT MODAL --- */
-        .verdict-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); border: 2px solid #fff; padding: 30px; text-align: center; z-index: 100; box-shadow: 0 0 30px rgba(255,255,255,0.2); width: 400px; }
+        .verdict-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); border: 2px solid #fff; padding: 30px; text-align: center; z-index: 100; box-shadow: 0 0 30px rgba(255,255,255,0.2); width: 450px; }
         .v-title-text { color:#888; font-size:16px; }
         .v-score { font-size: 36px; font-weight: bold; margin: 10px 0; text-transform: uppercase; }
         .v-desc { margin-bottom: 15px; font-size: 14px; color: #ccc; }
@@ -70,8 +69,6 @@
         .feed-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 300px; background: #111; border-left: 1px solid #00ff00; z-index: 50; display: none; flex-direction: column; padding: 10px; }
         .feed-panel.open { display: flex; }
         .feed-item { background: #1a1a1a; padding: 5px; margin-bottom: 5px; border-left: 4px solid #555; font-size: 12px; color: #ccc; }
-        
-        /* Цвета в ленте */
         .feed-item.clean { border-color: lime; }
         .feed-item.suspicious { border-color: yellow; }
         .feed-item.dangerous { border-color: orange; }
@@ -81,30 +78,30 @@
 </head>
 <body>
 
-    <!-- LOGIN -->
+    <!-- ВХОД -->
     <div id="auth-screen">
         <div class="auth-box">
-            <h2 style="margin:0 0 20px 0; color:#00ff00;">SYSTEM LOGIN</h2>
-            <input type="email" id="email" class="auth-input" placeholder="Email">
-            <input type="password" id="password" class="auth-input" placeholder="Password">
-            <button class="auth-btn" id="btnLogin">CONNECT</button>
-            <button class="auth-btn" style="background:#222;" id="btnRegister">REGISTER</button>
-            <div id="auth-error" style="color:red; margin-top:10px; display:none;">Error</div>
+            <h2 style="margin:0 0 20px 0; color:#00ff00;">ВХОД В СИСТЕМУ</h2>
+            <input type="email" id="email" class="auth-input" placeholder="Email адрес">
+            <input type="password" id="password" class="auth-input" placeholder="Пароль">
+            <button class="auth-btn" id="btnLogin">ВОЙТИ</button>
+            <button class="auth-btn" style="background:#222;" id="btnRegister">РЕГИСТРАЦИЯ</button>
+            <div id="auth-error" style="color:red; margin-top:10px; display:none;">Ошибка</div>
         </div>
     </div>
 
-    <!-- APP -->
+    <!-- ПРИЛОЖЕНИЕ -->
     <div id="app-screen">
         <div class="top-menu">
             <span id="user-display" style="color:#444; margin-right:10px;">...</span>
-            <button class="menu-btn" onclick="toggleFeed()">FEED</button>
-            <button class="menu-btn" onclick="doLogout()">EXIT</button>
+            <button class="menu-btn" onclick="toggleFeed()">ЛЕНТА</button>
+            <button class="menu-btn" onclick="doLogout()">ВЫХОД</button>
         </div>
 
-        <h1>🧬 VIRUS HUNTER v13.0</h1>
+        <h1>🧬 VIRUS HUNTER v13.2</h1>
 
         <div class="control-bar">
-            <select id="targetType" title="Target Type">
+            <select id="targetType" title="Тип файла">
                 <option value="bat">Batch (.bat)</option>
                 <option value="py">Python (.py)</option>
                 <option value="exe">Binary (.exe)</option>
@@ -115,41 +112,41 @@
                 <option value="zip">Archive (.zip)</option>
             </select>
             <input type="file" id="fileInput">
-            <select id="scanMode" title="Scan Mode">
-                <option value="fast">Fast Scan</option>
-                <option value="auto" disabled>Auto (Smart) [LOCK]</option>
-                <option value="full" disabled>Full (Deep) [LOCK]</option>
+            <select id="scanMode" title="Режим сканирования">
+                <option value="fast">Быстрое</option>
+                <option value="auto" disabled>Авто (Умное) [ЗАКРЫТО]</option>
+                <option value="full" disabled>Полное (Глубокое) [ЗАКРЫТО]</option>
             </select>
             <button id="btnScan" disabled onclick="startScanLogic()">ЗАПУСК</button>
         </div>
 
         <div class="status-bar">
-            <span id="status-text">System ready. Select file.</span>
-            <span id="sub-badge" style="color:#888;">SUBSCRIPTION: LOADING...</span>
+            <span id="status-text">Система готова. Выберите файл.</span>
+            <span id="sub-badge" style="color:#888;">ПОДПИСКА: ЗАГРУЗКА...</span>
         </div>
 
         <div class="terminal" id="terminal">
-            <div class="sys">> Initializing logic engine v13.0... OK</div>
-            <div class="sys">> Database connection... OK</div>
+            <div class="sys">> Инициализация логического движка v13.2... ОК</div>
+            <div class="sys">> Подключение к базе данных... ОК</div>
         </div>
 
         <div class="feed-panel" id="feedPanel">
-            <div style="color:orange; margin-bottom:10px; font-weight:bold;">GLOBAL THREATS</div>
-            <div id="feed" style="overflow-y:auto; flex:1;">Loading...</div>
-            <button onclick="toggleFeed()" style="margin-top:10px; background:#333; color:#fff; border:none; padding:5px; cursor:pointer;">CLOSE</button>
+            <div style="color:orange; margin-bottom:10px; font-weight:bold;">ГЛОБАЛЬНЫЕ УГРОЗЫ</div>
+            <div id="feed" style="overflow-y:auto; flex:1;">Загрузка...</div>
+            <button onclick="toggleFeed()" style="margin-top:10px; background:#333; color:#fff; border:none; padding:5px; cursor:pointer;">ЗАКРЫТЬ</button>
         </div>
     </div>
 
-    <!-- VERDICT -->
+    <!-- ВЕРДИКТ -->
     <div id="verdict" class="verdict-modal">
-        <div class="v-title-text">ANALYSIS REPORT</div>
-        <div id="v-score" class="v-score">CLEAN</div>
-        <div id="v-desc">No malicious patterns detected.</div>
+        <div class="v-title-text">ОТЧЕТ ОБ АНАЛИЗЕ</div>
+        <div id="v-score" class="v-score">ЧИСТО</div>
+        <div id="v-desc">Вредоносных шаблонов не обнаружено.</div>
         <div id="v-details" class="v-details-box">
-            <div style="color:#888; margin-bottom:5px; border-bottom:1px solid #333;">FOUND OBJECTS:</div>
+            <div style="color:#888; margin-bottom:5px; border-bottom:1px solid #333;">НАЙДЕННЫЕ ОБЪЕКТЫ:</div>
             <ul id="v-list" class="v-details-list"></ul>
         </div>
-        <button class="btn-close" onclick="document.getElementById('verdict').style.display='none'">CLOSE</button>
+        <button class="btn-close" onclick="document.getElementById('verdict').style.display='none'">ЗАКРЫТЬ</button>
     </div>
 
     <script type="module">
@@ -173,6 +170,7 @@
 
         let fileRawData = null;
         let fileName = "";
+        let fileLines = [];
 
         window.toggleFeed = () => document.getElementById('feedPanel').classList.toggle('open');
         window.doLogout = () => signOut(auth);
@@ -195,76 +193,91 @@
             onValue(ref(db, 'Users/'+uid), (s) => {
                 const d = s.val();
                 const sub = (d && d.Subscribe) ? d.Subscribe : 'default';
-                document.getElementById('sub-badge').innerText = `SUBSCRIPTION: ${sub.toUpperCase()}`;
+                document.getElementById('sub-badge').innerText = `ПОДПИСКА: ${sub.toUpperCase()}`;
                 const oA = document.querySelector('option[value="auto"]');
                 const oF = document.querySelector('option[value="full"]');
-                oA.disabled=true; oA.innerText="Auto [LOCK]";
-                oF.disabled=true; oF.innerText="Full [LOCK]";
-                if(sub === 'Auto' || sub === 'Full') { oA.disabled=false; oA.innerText="Auto (Smart)"; }
-                if(sub === 'Full') { oF.disabled=false; oF.innerText="Full (Deep + Decrypt)"; }
+                oA.disabled=true; oA.innerText="Авто [ЗАКРЫТО]";
+                oF.disabled=true; oF.innerText="Полное [ЗАКРЫТО]";
+                if(sub === 'Auto' || sub === 'Full') { oA.disabled=false; oA.innerText="Авто (Умное)"; }
+                if(sub === 'Full') { oF.disabled=false; oF.innerText="Полное (Глубокое)"; }
             });
         }
 
         document.getElementById('btnLogin').onclick = () => {
             signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value)
-            .catch(e => { document.getElementById('auth-error').innerText = "Login Failed"; document.getElementById('auth-error').style.display='block'; });
+            .catch(e => { document.getElementById('auth-error').innerText = "Ошибка входа"; document.getElementById('auth-error').style.display='block'; });
         };
         document.getElementById('btnRegister').onclick = () => {
             const e = document.getElementById('email').value, p = document.getElementById('password').value;
-            if(p.length<6) return alert("Password min 6 chars");
+            if(p.length<6) return alert("Пароль мин. 6 символов");
             createUserWithEmailAndPassword(auth, e, p)
             .then(c => set(ref(db, 'Users/'+c.user.uid), {email:e, Subscribe:"default"}))
             .catch(e => alert(e.message));
         };
 
-        // --- RULES (LEVELS: 1=SUSPICIOUS, 2=DANGEROUS, 3=VERY DANGEROUS) ---
+        // --- ПРАВИЛА (ПЕРЕВЕДЕНЫ НА РУССКИЙ) ---
 
         const batRules = [
-            { regex: /del\s|erase\s/i, msg: "DELETE FILE", level: 1 },
-            { regex: /ren\s|rename\s/i, msg: "RENAME FILE", level: 1 },
-            { regex: /move\s/i, msg: "MOVE FILE", level: 1 },
-            { regex: /shutdown/i, msg: "SHUTDOWN/REBOOT", level: 1 },
-            
-            { regex: /copy\s|xcopy\s/i, msg: "COPY FILE", level: 2 },
-            { regex: /attrib\s/i, msg: "HIDE FILES", level: 2 },
-            { regex: /%0/i, msg: "FORK BOMB / LOOP", level: 2 },
-            { regex: /CurrentVersion\\Run/i, msg: "REGISTRY AUTORUN", level: 2 },
-
-            { regex: /format\s/i, msg: "FORMAT DISK", level: 3 },
-            { regex: /reg\s+add|reg\s+delete/i, msg: "REGISTRY MODIFICATION", level: 3 },
-            { regex: /rd\s|rmdir\s/i, msg: "DELETE FOLDER", level: 2 }
+            { regex: /del\s|erase\s/i, msg: "УДАЛЕНИЕ ФАЙЛА", level: 1 },
+            { regex: /ren\s|rename\s/i, msg: "ПЕРЕИМЕНОВАНИЕ", level: 1 },
+            { regex: /move\s/i, msg: "ПЕРЕМЕЩЕНИЕ ФАЙЛА", level: 1 },
+            { regex: /shutdown/i, msg: "ВЫКЛЮЧЕНИЕ/ПЕРЕЗАГРУЗКА", level: 1 },
+            { regex: /copy\s|xcopy\s/i, msg: "КОПИРОВАНИЕ ФАЙЛА", level: 2 },
+            { regex: /attrib\s/i, msg: "СКРЫТИЕ ФАЙЛОВ", level: 2 },
+            { regex: /%0/i, msg: "FORK-БОМБА / ЦИКЛ", level: 2 },
+            { regex: /CurrentVersion\\Run/i, msg: "АВТОЗАГРУЗКА (РЕЕСТР)", level: 2 },
+            { regex: /format\s/i, msg: "ФОРМАТИРОВАНИЕ ДИСКА", level: 3 },
+            { regex: /reg\s+add|reg\s+delete/i, msg: "ИЗМЕНЕНИЕ РЕЕСТРА", level: 3 },
+            { regex: /rd\s|rmdir\s/i, msg: "УДАЛЕНИЕ ПАПКИ", level: 2 }
         ];
         
         const pyRules = [
-            { regex: /os\.remove|shutil\.rmtree/i, msg: "PY: DELETE FILE", level: 1 },
-            { regex: /os\.rename/i, msg: "PY: RENAME FILE", level: 1 },
-            
-            { regex: /shutil\.copy/i, msg: "PY: COPY FILE", level: 2 },
-            { regex: /w\.attributes\("-fullscreen",\s*True\)/i, msg: "WINLOCKER: FULLSCREEN", level: 2 },
-            
-            { regex: /ctypes\.windll|BlockInput/i, msg: "WINLOCKER: BLOCK INPUT", level: 3 },
-            { regex: /pynput|keyboard\.hook/i, msg: "SPYWARE: KEYLOGGER", level: 3 },
-            { regex: /winreg/i, msg: "PY: REGISTRY HACK", level: 3 }
+            { regex: /os\.remove|shutil\.rmtree/i, msg: "PY: УДАЛЕНИЕ ФАЙЛА", level: 1 },
+            { regex: /os\.rename/i, msg: "PY: ПЕРЕИМЕНОВАНИЕ", level: 1 },
+            { regex: /shutil\.copy/i, msg: "PY: КОПИРОВАНИЕ", level: 2 },
+            { regex: /w\.attributes\("-fullscreen",\s*True\)/i, msg: "ВИНЛОКЕР: ПОЛНЫЙ ЭКРАН", level: 2 },
+            { regex: /ctypes\.windll|BlockInput/i, msg: "ВИНЛОКЕР: БЛОК ВВОДА", level: 3 },
+            { regex: /pynput|keyboard\.hook/i, msg: "ШПИОН: КЕЙЛОГГЕР", level: 3 },
+            { regex: /winreg/i, msg: "PY: ВЗЛОМ РЕЕСТРА", level: 3 }
         ];
 
         const exeRules = [
-            { regex: /ShellExecute/i, msg: "API: EXECUTE COMMAND", level: 1 },
-            { regex: /IsDebuggerPresent/i, msg: "ANTI-DEBUG", level: 1 },
-            
-            { regex: /InternetOpen|URLDownloadToFile/i, msg: "API: DOWNLOADER", level: 2 },
-            { regex: /cmd\.exe|powershell\.exe/i, msg: "STR: SHELL CALL", level: 2 },
-            
-            { regex: /RegSetValueEx/i, msg: "API: REGISTRY WRITE", level: 3 },
-            { regex: /GetAsyncKeyState|SetWindowsHookEx/i, msg: "API: KEYLOGGER HOOK", level: 3 }
+            { regex: /ShellExecute/i, msg: "API: ВЫПОЛНЕНИЕ КОМАНДЫ", level: 1 },
+            { regex: /IsDebuggerPresent/i, msg: "АНТИ-ОТЛАДКА", level: 1 },
+            { regex: /InternetOpen|URLDownloadToFile/i, msg: "API: ЗАГРУЗЧИК", level: 2 },
+            { regex: /cmd\.exe|powershell\.exe/i, msg: "STR: ВЫЗОВ КОНСОЛИ", level: 2 },
+            { regex: /RegSetValueEx/i, msg: "API: ЗАПИСЬ В РЕЕСТР", level: 3 },
+            { regex: /GetAsyncKeyState|SetWindowsHookEx/i, msg: "API: КЕЙЛОГГЕР (HOOK)", level: 3 }
         ];
 
         const vbsRules = [
-            { regex: /CreateObject\("WScript\.Shell"\)/i, msg: "VBS: SHELL OBJECT", level: 1 },
-            { regex: /FileSystemObject/i, msg: "VBS: FILE SYSTEM", level: 1 },
-            { regex: /AutoOpen|Document_Open/i, msg: "VBS: MACRO VIRUS", level: 2 }
+            { regex: /CreateObject\("WScript\.Shell"\)/i, msg: "VBS: ОБЪЕКТ SHELL", level: 1 },
+            { regex: /FileSystemObject/i, msg: "VBS: ФАЙЛОВАЯ СИСТЕМА", level: 1 },
+            { regex: /AutoOpen|Document_Open/i, msg: "VBS: МАКРО ВИРУС", level: 2 }
         ];
 
-        // Helper: Проверка на системные файлы (повышает уровень до 3)
+        const ps1Rules = [
+            { regex: /Invoke-Expression|IEX/i, msg: "PS1: ЗАПУСК КОДА (IEX)", level: 3 },
+            { regex: /Net\.WebClient|DownloadString/i, msg: "PS1: ЗАГРУЗЧИК", level: 2 },
+            { regex: /-WindowStyle\s+Hidden/i, msg: "PS1: СКРЫТОЕ ОКНО", level: 2 },
+            { regex: /Bypass/i, msg: "PS1: ОБХОД ПОЛИТИК", level: 1 }
+        ];
+
+        const webRules = [
+            { regex: /<script|javascript:/i, msg: "WEB: СКРИПТ В СТРОКЕ", level: 1 },
+            { regex: /eval\(|document\.cookie/i, msg: "JS: ОПАСНАЯ ФУНКЦИЯ", level: 2 },
+            { regex: /window\.location\.replace/i, msg: "JS: ПЕРЕАДРЕСАЦИЯ", level: 1 },
+            { regex: /iframe.*display:\s*none/i, msg: "HTML: СКРЫТЫЙ IFRAME", level: 2 }
+        ];
+
+        const jarRules = [
+            { regex: /java\/lang\/Runtime|getRuntime/i, msg: "JAVA: ЗАПУСК КОМАНДЫ", score: 5 },
+            { regex: /java\/net\/URLClassLoader/i, msg: "JAVA: ЗАГРУЗКА ИЗ СЕТИ", score: 6 },
+            { regex: /org\/bukkit|force-op|setOp/i, msg: "MC: ВРЕДОНОСНЫЙ ПЛАГИН", score: 8 },
+            { regex: /cmd\.exe|bash|sh/i, msg: "JAVA: КОНСОЛЬ", score: 4 },
+            { regex: /http:\/\/|https:\/\//i, msg: "STR: НАЙДЕНА ССЫЛКА", score: 1 }
+        ];
+
         function checkSystemTargets(line) {
             if (line.toLowerCase().includes("windows") || line.toLowerCase().includes("system32")) {
                 return true;
@@ -282,11 +295,15 @@
                 reader.onload = (ev) => {
                     fileLines = ev.target.result.split('\n');
                     document.getElementById('btnScan').disabled = false;
-                    log(`Loaded: ${fileName} (${(f.size/1024).toFixed(1)} KB)`);
-                    document.getElementById('status-text').innerText = `Ready.`;
+                    log(`Файл загружен: ${fileName} (${(f.size/1024).toFixed(1)} КБ)`);
+                    document.getElementById('status-text').innerText = `Готово.`;
                 };
-                if(type==='exe'||type==='jar'||fileName.endsWith('.exe')) reader.readAsText(f, 'ISO-8859-1');
-                else reader.readAsText(f, 'CP866');
+                if(type==='exe'||type==='jar'||fileName.endsWith('.exe')||fileName.endsWith('.jar')||type==='zip'||fileName.endsWith('.zip')) {
+                    document.getElementById('btnScan').disabled = false;
+                    log(`Бинарник/Архив загружен: ${fileName}`);
+                } else {
+                    reader.readAsText(f, 'CP866');
+                }
             }
         };
 
@@ -304,52 +321,107 @@
             document.getElementById('terminal').innerHTML = "";
             document.getElementById('verdict').style.display = "none";
             
-            log(`SCAN STARTED. MODE: ${mode.toUpperCase()}`);
-
-            // Logic for ZIP omitted for brevity in this specific prompt to fit logic update, 
-            // but you can paste previous ZIP logic here if needed. 
-            // Focusing on standard file scan loop.
+            log(`СКАНИРОВАНИЕ НАЧАТО. РЕЖИМ: ${mode.toUpperCase()} | ЦЕЛЬ: ${type.toUpperCase()}`);
 
             let delay = mode==='full'?10:2;
             let acc = mode==='fast'?0.5:(mode==='auto'?0.8:1.0);
-            let idx = 0;
-            
-            // MAIN METRIC: HIGHEST DETECTED THREAT LEVEL
             let maxThreatLevel = 0; 
             let foundThreats = [];
 
-            // Select rules
+            // ZIP LOGIC
+            if(type === 'zip' || fileName.endsWith('.zip')) {
+                log("Чтение ZIP архива...", "sys");
+                try {
+                    const zip = new JSZip();
+                    const content = await zip.loadAsync(fileRawData);
+                    let fileCount = 0;
+                    for (const [relativePath, zipEntry] of Object.entries(content.files)) {
+                        if(zipEntry.dir) continue;
+                        fileCount++;
+                        log(`Сканирование: ${relativePath}`, "zip-entry");
+                        const text = await zipEntry.async("string");
+                        const lines = text.split('\n');
+                        
+                        let innerRules = [];
+                        if(relativePath.endsWith('.bat')) innerRules = batRules;
+                        else if(relativePath.endsWith('.py')) innerRules = pyRules;
+                        else if(relativePath.endsWith('.vbs')) innerRules = vbsRules;
+                        else if(relativePath.endsWith('.ps1')) innerRules = ps1Rules;
+                        else if(relativePath.endsWith('.js') || relativePath.endsWith('.html')) innerRules = webRules;
+                        
+                        if(innerRules.length > 0) {
+                             lines.forEach(line => {
+                                 if(line.trim().length > 3) {
+                                     for(const r of innerRules) {
+                                         if(r.regex.test(line)) {
+                                             let lvl = r.level;
+                                             if(lvl > maxThreatLevel) maxThreatLevel = lvl;
+                                             foundThreats.push({ msg: r.msg + ` (${relativePath})`, level: lvl });
+                                             log(`ОБНАРУЖЕНО: ${r.msg}`, `level-${lvl}`);
+                                         }
+                                     }
+                                 }
+                             });
+                        }
+                    }
+                    finish(maxThreatLevel, mode, foundThreats);
+                } catch(e) { log("Ошибка ZIP: " + e, "danger"); finish(0, mode, []); }
+                return;
+            }
+
+            // STANDARD SCAN
             let rules = batRules;
             if(type === 'py') rules = pyRules;
             if(type === 'exe') rules = exeRules;
             if(type === 'vbs') rules = vbsRules;
+            if(type === 'ps1') rules = ps1Rules;
+            if(type === 'web') rules = webRules;
+            if(type === 'jar') rules = jarRules;
 
+            if(type === 'exe' || type === 'jar') {
+                 const reader = new FileReader();
+                 reader.onload = (e) => {
+                     const text = e.target.result;
+                     for(const r of rules) {
+                         if(r.regex.test(text)) {
+                             let lvl = r.level || 2; // Default for JAR/EXE if missing
+                             if(r.score) { // Adapt older rules if they have 'score' instead of 'level'
+                                 if(r.score >= 5) lvl = 3;
+                                 else if(r.score >= 3) lvl = 2;
+                                 else lvl = 1;
+                             }
+                             if(lvl > maxThreatLevel) maxThreatLevel = lvl;
+                             foundThreats.push({ msg: r.msg, level: lvl });
+                             log(`НАЙДЕНА СТРОКА: ${r.msg}`, `level-${lvl}`);
+                         }
+                     }
+                     finish(maxThreatLevel, mode, foundThreats);
+                 };
+                 reader.readAsText(fileRawData, 'ISO-8859-1');
+                 return;
+            }
+
+            let idx = 0;
             function step() {
                 if(idx >= fileLines.length) { finish(maxThreatLevel, mode, foundThreats); return; }
                 let line = fileLines[idx].trim();
                 
-                // Decrypt
                 if(mode==='full' && (type==='bat'||type==='vbs') && line.includes('^')) {
                     line = line.replaceAll('^', '');
-                    if(Math.random()>0.9) log("Decrypting...", "decrypt");
+                    if(Math.random()>0.9) log("Дешифровка...", "decrypt");
                 }
 
                 if(line.length > 3 && !line.startsWith('rem') && !line.startsWith('#')) {
                     for(const r of rules) {
                         if(r.regex.test(line) && Math.random()<=acc) {
                             let currentLevel = r.level;
-                            
-                            // Check for SYSTEM file deletion override
-                            if (checkSystemTargets(line) && (r.msg.includes("DELETE") || r.msg.includes("FORMAT"))) {
-                                currentLevel = 3; // Automatic VERY DANGEROUS
-                                r.msg += " (SYSTEM FILE!)";
+                            if (checkSystemTargets(line) && (r.msg.includes("УДАЛЕНИЕ") || r.msg.includes("ФОРМАТИРОВАНИЕ") || r.msg.includes("DELETE") || r.msg.includes("FORMAT"))) {
+                                currentLevel = 3; r.msg += " (СИСТЕМНЫЙ ФАЙЛ!)";
                             }
-
-                            // Update max threat
                             if(currentLevel > maxThreatLevel) maxThreatLevel = currentLevel;
                             
                             foundThreats.push({ msg: r.msg, level: currentLevel });
-                            log(`DETECTED: ${r.msg}`, `level-${currentLevel}`);
+                            log(`ОБНАРУЖЕНО: ${r.msg}`, `level-${currentLevel}`);
                             break; 
                         }
                     }
@@ -363,14 +435,14 @@
         function finish(maxLevel, mode, threats) {
             document.getElementById('btnScan').disabled = false;
             
-            let status = "CLEAN";
+            let status = "ЧИСТО";
             let color = "lime";
 
-            if(maxLevel === 1) { status = "SUSPICIOUS"; color = "yellow"; }
-            if(maxLevel === 2) { status = "DANGEROUS"; color = "orange"; }
-            if(maxLevel === 3) { status = "VERY DANGEROUS"; color = "red"; }
+            if(maxLevel === 1) { status = "ПОДОЗРИТЕЛЬНО"; color = "yellow"; }
+            if(maxLevel === 2) { status = "ОПАСНО"; color = "orange"; }
+            if(maxLevel === 3) { status = "КРИТИЧНО"; color = "red"; }
 
-            log(`RESULT: ${status}`, maxLevel > 0 ? `level-${maxLevel}` : "sys");
+            log(`РЕЗУЛЬТАТ: ${status}`, maxLevel > 0 ? `level-${maxLevel}` : "sys");
             
             const v = document.getElementById('verdict');
             const vs = document.getElementById('v-score');
@@ -385,14 +457,12 @@
             
             vList.innerHTML = "";
             if(maxLevel === 0) {
-                vd.innerText = "System safe. No threats found.";
+                vd.innerText = "Система безопасна. Угроз нет.";
                 vBox.style.display = "none";
             } else {
-                vd.innerText = "Malicious patterns detected.";
+                vd.innerText = "Обнаружен вредоносный код.";
                 vBox.style.display = "block";
-                // Remove duplicates for cleaner list
                 const unique = [...new Set(threats.map(t => JSON.stringify(t)))].map(s => JSON.parse(s));
-                
                 unique.forEach(t => {
                     let li = document.createElement("li");
                     li.innerText = `[L${t.level}] ${t.msg}`;
@@ -420,7 +490,16 @@
                     if(i.score === 1) c = "suspicious";
                     if(i.score === 2) c = "dangerous";
                     if(i.score === 3) c = "critical";
-                    f.innerHTML += `<div class="feed-item ${c}"><b>${i.filename}</b><br>${i.status}</div>`;
+                    
+                    // Перевод статусов для ленты
+                    let displayStatus = i.status;
+                    if (displayStatus === "CLEAN") displayStatus = "ЧИСТО";
+                    if (displayStatus === "SUSPICIOUS") displayStatus = "ПОДОЗРИТЕЛЬНО";
+                    if (displayStatus === "DANGEROUS") displayStatus = "ОПАСНО";
+                    if (displayStatus === "VERY DANGEROUS" || displayStatus === "INFECTED") displayStatus = "КРИТИЧНО";
+                    if (displayStatus === "WARNING") displayStatus = "ОПАСНО";
+
+                    f.innerHTML += `<div class="feed-item ${c}"><b>${i.filename}</b><br>${displayStatus}</div>`;
                 });
             });
         }
