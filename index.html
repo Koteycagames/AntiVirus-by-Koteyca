@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER SECURITY HUB v16.1</title>
+    <title>CYBER SECURITY HUB v16.2</title>
     <!-- Библиотеки -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
@@ -65,14 +65,21 @@
             width: 160px; height: 160px;
             border: 2px solid #333; background: #111;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s; border-radius: 10px;
+            cursor: pointer; transition: 0.3s; border-radius: 10px; position: relative;
         }
         .hub-card:hover { border-color: #00ff00; box-shadow: 0 0 20px rgba(0,255,0,0.3); transform: translateY(-5px); }
+        
+        /* Стили для заблокированных карточек */
+        .hub-card.locked { opacity: 0.4; filter: grayscale(100%); border-color: #555; cursor: not-allowed; }
+        .hub-card.locked:hover { transform: none; box-shadow: none; border-color: #555; }
+        .lock-icon { position: absolute; top: 10px; right: 10px; font-size: 1.2em; color: #fff; display: none; }
+        .hub-card.locked .lock-icon { display: block; }
+
         .card-icon { font-size: 3em; margin-bottom: 10px; }
         .card-title { font-weight: bold; font-size: 0.8em; text-align: center; text-transform: uppercase; }
         .user-welcome { position: absolute; top: 20px; right: 20px; color: #666; font-size: 0.8em; }
 
-        /* --- МОДУЛИ (ОБЩИЕ) --- */
+        /* --- МОДУЛИ (UI) --- */
         .module-container {
             background-color: #1a1a1a; padding: 20px; border: 1px solid #00ff00;
             border-radius: 5px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
@@ -142,7 +149,7 @@
     <!-- 1. ВХОД -->
     <div id="auth-screen" class="screen active">
         <div class="auth-box">
-            <h2 style="margin:0 0 20px 0; color:#00ff00;">ВХОД В СИСТЕМУ</h2>
+            <h2 style="margin:0 0 20px 0; color:#00ff00;">SYSTEM LOGIN</h2>
             <input type="email" id="email" class="auth-input" placeholder="Email адрес">
             <input type="password" id="password" class="auth-input" placeholder="Пароль">
             <button class="auth-btn" id="btnLogin">ВОЙТИ</button>
@@ -156,37 +163,43 @@
         <div class="user-welcome">ПОЛЬЗОВАТЕЛЬ: <span id="user-display">...</span> | <span onclick="doLogout()" style="cursor:pointer; text-decoration:underline;">ВЫХОД</span></div>
         
         <div class="dashboard-container">
-            <div class="hub-title">ГЛАВНОЕ МЕНЮ</div>
+            <div class="hub-title">ГЛАВНОЕ МЕНЮ v16.2</div>
             <div class="hub-grid">
-                <div class="hub-card" onclick="openTool('virus')">
+                <!-- 1. VIRUS (ALL) -->
+                <div class="hub-card" id="card-virus" onclick="openTool('virus')">
+                    <div class="lock-icon">🔒</div>
                     <div class="card-icon">🧬</div>
                     <div class="card-title">АНТИВИРУС</div>
-                    <div style="color:#666; font-size:0.8em; margin-top:5px;">Сканер файлов</div>
                 </div>
-                <div class="hub-card" onclick="openTool('rick')">
+                <!-- 2. RICK (ALL) -->
+                <div class="hub-card" id="card-rick" onclick="openTool('rick')">
+                    <div class="lock-icon">🔒</div>
                     <div class="card-icon">🕵️‍♂️</div>
                     <div class="card-title">АНТИ-ТРОЛЛ</div>
-                    <div style="color:#666; font-size:0.8em; margin-top:5px;">Сканер ссылок</div>
                 </div>
-                <div class="hub-card" onclick="openTool('osint')">
-                    <div class="card-icon">👁️</div>
-                    <div class="card-title">OSINT СКАНЕР</div>
-                    <div style="color:#666; font-size:0.8em; margin-top:5px;">IP/Порты/Почта</div>
-                </div>
-                <div class="hub-card" onclick="openTool('pass')">
+                <!-- 3. PASS (ALL) -->
+                <div class="hub-card" id="card-pass" onclick="openTool('pass')">
+                    <div class="lock-icon">🔒</div>
                     <div class="card-icon">🔐</div>
                     <div class="card-title">АУДИТ ПАРОЛЕЙ</div>
-                    <div style="color:#666; font-size:0.8em; margin-top:5px;">Проверка/Генерация</div>
                 </div>
-                <div class="hub-card" onclick="openTool('exif')">
+                <!-- 4. OSINT (AUTO+) -->
+                <div class="hub-card" id="card-osint" onclick="openTool('osint')">
+                    <div class="lock-icon">🔒</div>
+                    <div class="card-icon">👁️</div>
+                    <div class="card-title">OSINT СКАНЕР</div>
+                </div>
+                <!-- 5. EXIF (FULL) -->
+                <div class="hub-card" id="card-exif" onclick="openTool('exif')">
+                    <div class="lock-icon">🔒</div>
                     <div class="card-icon">📸</div>
                     <div class="card-title">EXIF ШПИОН</div>
-                    <div style="color:#666; font-size:0.8em; margin-top:5px;">Метаданные фото</div>
                 </div>
-                <div class="hub-card" onclick="openTool('crypto')">
+                <!-- 6. CRYPTO (FULL) -->
+                <div class="hub-card" id="card-crypto" onclick="openTool('crypto')">
+                    <div class="lock-icon">🔒</div>
                     <div class="card-icon">🔓</div>
                     <div class="card-title">КРИПТО СТАНЦИЯ</div>
-                    <div style="color:#666; font-size:0.8em; margin-top:5px;">Шифрование</div>
                 </div>
             </div>
         </div>
@@ -337,6 +350,7 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
+        // GLOBALS
         let fileRawData = null, fileName = "", fileLines = [], currentUserSub = 'default';
 
         // --- UI ---
@@ -344,7 +358,24 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
+        
+        // OPEN TOOL WITH PERMISSION CHECK
         window.openTool = (tool) => {
+            // PERMISSION LOGIC
+            const perms = {
+                'virus': ['default', 'Auto', 'Full'],
+                'rick': ['default', 'Auto', 'Full'],
+                'pass': ['default', 'Auto', 'Full'],
+                'osint': ['Auto', 'Full'],
+                'exif': ['Full'],
+                'crypto': ['Full']
+            };
+
+            if (!perms[tool].includes(currentUserSub)) {
+                alert("ДОСТУП ЗАПРЕЩЕН! Требуется повышение уровня подписки.");
+                return;
+            }
+
             const loader = document.getElementById('loading-overlay');
             const msg = document.getElementById('loading-msg');
             const msgs = { 
@@ -357,15 +388,11 @@
             };
             msg.innerText = msgs[tool] || "ЗАГРУЗКА...";
             
-            // 1. Сначала показываем лоадер ПОВЕРХ всего
             loader.style.display = 'flex'; 
-            // Форсируем отрисовку
             void loader.offsetWidth; 
             loader.style.opacity = '1';
 
-            // 2. Ждем 2.5с
             setTimeout(() => {
-                // 3. МЕНЯЕМ ЭКРАН ПОД ЛОАДЕРОМ
                 if(tool === 'virus') window.showScreen('virus-tool');
                 if(tool === 'rick') window.showScreen('rick-tool');
                 if(tool === 'osint') window.showScreen('osint-tool');
@@ -373,7 +400,6 @@
                 if(tool === 'exif') window.showScreen('exif-tool');
                 if(tool === 'crypto') window.showScreen('crypto-tool');
                 
-                // 4. УБИРАЕМ ЛОАДЕР
                 loader.style.opacity = '0';
                 setTimeout(() => { loader.style.display = 'none'; }, 500);
             }, 2500);
@@ -390,15 +416,44 @@
                 onValue(ref(db, 'Users/'+user.uid), (s) => {
                     const sub = (s.val() && s.val().Subscribe) ? s.val().Subscribe : 'default';
                     currentUserSub = sub;
+                    
+                    // 1. VIRUS HUNTER MODES
                     const oA = document.querySelector('option[value="auto"]'), oF = document.querySelector('option[value="full"]');
                     oA.disabled=true; oA.innerText="Авто [ЗАКРЫТО]"; oF.disabled=true; oF.innerText="Полное [ЗАКРЫТО]";
                     if(sub==='Auto'||sub==='Full') { oA.disabled=false; oA.innerText="Авто"; }
                     if(sub==='Full') { oF.disabled=false; oF.innerText="Полное"; }
+                    
+                    // 2. DASHBOARD LOCKS
+                    updateHubLocks(sub);
                 });
                 listenFeed();
             } else window.showScreen('auth-screen');
         });
         
+        function updateHubLocks(sub) {
+            const cards = {
+                'virus': document.getElementById('card-virus'),
+                'rick': document.getElementById('card-rick'),
+                'pass': document.getElementById('card-pass'),
+                'osint': document.getElementById('card-osint'),
+                'exif': document.getElementById('card-exif'),
+                'crypto': document.getElementById('card-crypto')
+            };
+
+            // Reset
+            for (let k in cards) cards[k].classList.remove('locked');
+
+            // Apply Locks
+            if (sub === 'default') {
+                cards['osint'].classList.add('locked');
+                cards['exif'].classList.add('locked');
+                cards['crypto'].classList.add('locked');
+            } else if (sub === 'Auto') {
+                cards['exif'].classList.add('locked');
+                cards['crypto'].classList.add('locked');
+            }
+        }
+
         document.getElementById('btnLogin').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value).catch(e=>alert("Ошибка входа"));
         document.getElementById('btnRegister').onclick = () => createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value).then(c=>set(ref(db,'Users/'+c.user.uid),{email:c.user.email,Subscribe:"default"})).catch(e=>alert(e.message));
 
@@ -440,7 +495,7 @@
             if(t==='exe'||t==='jar'){
                 const r=new FileReader();r.onload=(e)=>{const txt=e.target.result;if(txt.includes("ShellExecute")||txt.includes("cmd.exe")){maxL=2;fT.push({msg:"ПОДОЗРИТЕЛЬНЫЕ СТРОКИ",level:2});}finish(maxL,m,fT);};r.readAsText(fileRawData,'ISO-8859-1');return;
             }
-            let i=0;function step(){if(i>=fileLines.length){finish(maxL,m,fT);return;}let l=fileLines[i].trim();if(m==='full'&&(t==='bat'||t==='vbs')&&l.includes('^')){l=l.replaceAll('^','');if(Math.random()>0.9)log("ДЕШИФРОВКА...","decrypt");}if(l.length>3&&!l.startsWith('rem')){for(const r of rules){if(r.regex.test(l)){if(r.level>maxL)maxL=r.level;fT.push({msg:r.msg,level:r.level});log(`ОБНАРУЖЕНО: ${r.msg}`,`level-${r.level}`);break;}}}i++;setTimeout(step,2);}step();
+            let i=0;function step(){if(i>=fileLines.length){finish(maxL,m,fT);return;}let l=fileLines[i].trim();if(m==='full'&&(t==='bat'||t==='vbs')&&l.includes('^')){l=l.replaceAll('^','');if(Math.random()>0.9)log("ДЕШИФРОВКА...","decrypt");}if(l.length>3&&!l.startsWith('rem')){for(const r of rules){if(r.regex.test(l)){if(r.level>maxL)maxL=r.level;fT.push({msg:r.msg,level:r.level});log(`DETECTED: ${r.msg}`,`level-${r.level}`);break;}}}i++;setTimeout(step,2);}step();
         };
         function finish(l,m,t){
             document.getElementById('btnScan').disabled=false; let s="ЧИСТО",c="lime";
@@ -452,7 +507,7 @@
         }
 
         // --- 2. RICKROLL ---
-        const rickIds=["dQw4w9WgXcQ"]; const rickDomains=["tomorrowtides.com"];const rickKeywords=["rick","рик","ролл","трол","отправь"];
+        const rickIds=["dQw4w9WgXcQ","xvFZjo5PgG0"];const rickDomains=["tomorrowtides.com"];const rickKeywords=["rick","рик","ролл","трол","отправь"];
         window.startRickScan=async()=>{
             const u=document.getElementById('urlInput').value.trim(); if(!u)return;
             const r=document.getElementById('rick-result'); r.style.display='block'; r.innerHTML='Сканирование...';
@@ -470,7 +525,7 @@
         }
         function showRickResult(t,title,desc){const r=document.getElementById('rick-result');let c=t==="DANGER"?"red":(t==="SAFE"?"lime":"orange");r.style.borderColor=c;r.style.color=c;r.innerHTML=`<div style="font-size:1.4em; font-weight:bold;">${title}</div><div style="color:#ccc;">${desc}</div>`;}
 
-        // --- 3. OSINT ---
+        // --- 3. OSINT (UPDATED with WHOIS) ---
         window.updateOsintPlaceholder = () => {
             const t = document.getElementById('osintType').value;
             const i = document.getElementById('osintInput');
@@ -482,12 +537,13 @@
             const res=document.getElementById('osint-result'); if(!v)return;
             res.innerHTML="Сканирование..."; await new Promise(r=>setTimeout(r,1000));
             
-            if(t==='ip'){try{const q=await fetch(`https://ipwho.is/${v}`);const d=await q.json();res.innerHTML=`IP: ${d.ip}\nГород: ${d.city}, ${d.country}\nПровайдер: ${d.connection.isp}`;}catch{res.innerHTML="Ошибка сети.";}}
+            if(t==='ip'){try{const q=await fetch(`https://ipwho.is/${v}`);const d=await q.json();res.innerHTML=`IP: ${d.ip}\nLoc: ${d.city}, ${d.country}\nISP: ${d.connection.isp}`;}catch{res.innerHTML="Ошибка сети.";}}
             else if(t==='port'){ res.innerHTML=`Порт ${v.split(':')[1]}: ПРОВЕРЕН.\nСтатус: ФИЛЬТР (Браузерное ограничение)`; }
             else if(t==='whois'){ 
+                // Используем RDAP (JSON Whois)
                 try{const q=await fetch(`https://rdap.org/domain/${v}`); const d=await q.json();
                 res.innerHTML=`ДОМЕН: ${d.handle}\nСТАТУС: ${d.status?d.status.join(', '):'N/A'}\nПОРТ 43: ${d.port43 || 'N/A'}`;}
-                catch{res.innerHTML=`WHOIS недоступен для ${v}.`;}
+                catch{res.innerHTML=`WHOIS недоступен для ${v} через браузер.`;}
             }
             else { res.innerHTML=`Анализ ${v}: ФОРМАТ ВЕРЕН.`; }
         }
@@ -540,7 +596,7 @@
                     out = inp.replace(/[a-zA-Z]/g, c => String.fromCharCode((c<="Z"?90:122)>=(c=c.charCodeAt(0)+s)?c:c-26));
                 }
                 r.innerText = out;
-            } catch(e) { r.innerText = "Ошибка!"; }
+            } catch(e) { r.innerText = "Ошибка декодирования!"; }
         }
 
     </script>
