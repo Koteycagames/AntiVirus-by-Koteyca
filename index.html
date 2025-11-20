@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER SECURITY HUB v15.5</title>
+    <title>CYBER SECURITY HUB v16.1</title>
+    <!-- Библиотеки -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+    
     <style>
         /* --- ОБЩИЕ СТИЛИ --- */
         body {
@@ -18,8 +21,12 @@
         }
 
         /* Утилиты */
-        .screen { display: none; height: 100%; width: 100%; position: relative; }
-        .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .screen { display: none; height: 100%; width: 100%; position: relative; flex-direction: column; align-items: center; justify-content: center; }
+        .screen.active { display: flex; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #333; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff00; }
 
         /* --- ЗАГРУЗЧИК --- */
         #loading-overlay {
@@ -43,45 +50,36 @@
         @keyframes blink { 50% { opacity: 0.5; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- ЭЛЕМЕНТЫ ИНТЕРФЕЙСА --- */
+        /* --- ВХОД --- */
         .auth-box { border: 1px solid #00ff00; padding: 30px; width: 300px; text-align: center; box-shadow: 0 0 15px rgba(0, 255, 0, 0.1); background: #050505; }
         .auth-input { width: 100%; padding: 10px; margin-bottom: 10px; background: #000; border: 1px solid #333; color: #00ff00; box-sizing: border-box; font-family: inherit; }
         .auth-btn { width: 100%; padding: 10px; background: #004400; color: #fff; border: none; cursor: pointer; font-weight: bold; margin-bottom: 5px; font-family: inherit; }
         .auth-btn:hover { background: #00ff00; color: #000; }
 
-        /* ДАШБОРД */
-        .dashboard-container { text-align: center; animation: fadeIn 0.5s; }
+        /* --- ДАШБОРД --- */
+        .dashboard-container { text-align: center; animation: fadeIn 0.5s; max-width: 900px; }
         .hub-title { font-size: 2em; margin-bottom: 40px; text-shadow: 0 0 10px #00ff00; letter-spacing: 3px; text-transform: uppercase; }
-        .hub-grid { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap;}
+        .hub-grid { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
         
         .hub-card {
-            width: 220px; height: 180px;
+            width: 160px; height: 160px;
             border: 2px solid #333; background: #111;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; transition: 0.3s; border-radius: 10px;
         }
         .hub-card:hover { border-color: #00ff00; box-shadow: 0 0 20px rgba(0,255,0,0.3); transform: translateY(-5px); }
-        .card-icon { font-size: 3.5em; margin-bottom: 15px; }
-        .card-title { font-weight: bold; font-size: 1.1em; }
+        .card-icon { font-size: 3em; margin-bottom: 10px; }
+        .card-title { font-weight: bold; font-size: 0.8em; text-align: center; text-transform: uppercase; }
         .user-welcome { position: absolute; top: 20px; right: 20px; color: #666; font-size: 0.8em; }
 
-        /* OSINT UI */
-        .osint-container {
+        /* --- МОДУЛИ (ОБЩИЕ) --- */
+        .module-container {
             background-color: #1a1a1a; padding: 20px; border: 1px solid #00ff00;
             border-radius: 5px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
-            width: 90%; max-width: 800px; position: relative; z-index: 1;
+            width: 90%; max-width: 800px; position: relative; z-index: 1; animation: fadeIn 0.3s;
         }
-        .osint-bar { display: flex; gap: 10px; margin-bottom: 20px; }
-        .osint-result { 
-            background: #000; border: 1px solid #333; padding: 15px; 
-            min-height: 200px; white-space: pre-wrap; font-size: 14px; color: #ccc;
-            overflow-y: auto;
-        }
-        .osint-key { color: #00ff00; font-weight: bold; }
-        .port-open { color: lime; font-weight: bold; }
-        .port-closed { color: red; font-weight: bold; }
-
-        /* VIRUS / RICK UI */
+        
+        /* Virus Hunter UI */
         .vh-header { width: 1000px; max-width: 95%; display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
         .control-bar { display: flex; background: #111; border: 1px solid #333; padding: 10px; border-radius: 3px; gap: 5px; width: 1000px; max-width: 95%; box-sizing: border-box; }
         select, input[type="file"], input[type="text"], button { background: #222; color: #e0e0e0; border: 1px solid #444; padding: 8px 12px; font-family: inherit; font-size: 14px; height: 40px; box-sizing: border-box; }
@@ -89,47 +87,62 @@
         #btnScan { background: #006400; color: #fff; border: none; font-weight: bold; width: 120px; cursor: pointer; transition: 0.2s; }
         #btnScan:hover { background: #00ff00; color: #000; }
         #btnScan:disabled { background: #333; color: #555; cursor: not-allowed; }
-        
         .terminal { width: 1000px; max-width: 95%; height: 450px; border: 1px solid #00ff00; background: #000; padding: 15px; overflow-y: auto; margin-top: 10px; font-size: 14px; box-shadow: 0 0 10px rgba(0, 255, 0, 0.05); }
+        
+        /* Элементы модулей */
+        .result-box { 
+            background: #000; border: 1px solid #333; padding: 15px; 
+            min-height: 150px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; font-size: 14px; color: #ccc; margin-top: 10px;
+        }
+        .action-bar { display: flex; gap: 10px; margin-bottom: 10px; }
+        
+        /* Меню и кнопки */
+        .top-menu { position: absolute; top: 20px; right: 20px; z-index: 100;}
+        .menu-btn { background: #111; border: 1px solid #333; color: #666; padding: 5px 10px; cursor: pointer; margin-left: 5px; font-family: inherit; }
+        .menu-btn:hover { border-color: #00ff00; color: #00ff00; }
+        .back-btn-abs { position: absolute; top: 20px; left: 20px; z-index: 10; background: #333; color: #fff; border: 1px solid #555; padding: 5px 15px; cursor: pointer; font-family: inherit; }
+        .back-btn-abs:hover { background: #555; }
+
+        /* RICKROLL UI (СТАРЫЙ СТИЛЬ) */
+        .rick-legacy-container {
+            background-color: #1a1a1a; padding: 2.5rem; border: 1px solid #00ff00;
+            border-radius: 5px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            width: 90%; max-width: 700px; text-align: center; position: relative; z-index: 1;
+        }
+        .rick-input { width: 90%; padding: 15px; background: #000; border: 1px solid #333; color: #00ff00; font-family: 'Courier New', monospace; font-size: 1.2rem; margin: 20px 0; outline: none; text-align: center; }
+        .rick-input:focus { border-color: #00ff00; box-shadow: 0 0 10px rgba(0,255,0,0.3); }
+        .rick-btn { background-color: #003300; color: #00ff00; border: 1px solid #00ff00; padding: 15px 40px; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; font-weight: bold; transition: 0.3s; font-family: 'Courier New', monospace; }
+        .rick-btn:hover { background-color: #00ff00; color: #000; box-shadow: 0 0 20px #00ff00; }
+        #rick-result { margin-top: 25px; padding: 20px; border: 1px dashed #333; display: none; font-family: sans-serif; text-align: left; }
+        .scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background-color: rgba(0, 255, 0, 0.5); animation: scan 3s linear infinite; pointer-events: none; z-index: 0; }
+        @keyframes scan { 0% { top: -5%; } 100% { top: 105%; } }
+
+        /* Логи и вердикты */
         .log-line { margin-bottom: 4px; word-break: break-all; }
         .level-1 { color: #ffff00; } .level-2 { color: #ff8800; } .level-3 { color: #ff0000; font-weight: bold; }
         .sys { color: #555; } .decrypt { color: #d600ff; } .zip-entry { color: #ffff00; border-top: 1px dashed #333; margin-top: 5px; padding-top: 2px; }
 
-        /* RICK UI */
-        .rick-container { background-color: #1a1a1a; padding: 2.5rem; border: 1px solid #00ff00; border-radius: 5px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); width: 90%; max-width: 700px; text-align: center; position: relative; z-index: 1; }
-        .rick-input { width: 90%; padding: 15px; background: #000; border: 1px solid #333; color: #00ff00; font-family: inherit; font-size: 1.2rem; margin: 20px 0; text-align: center; }
-        .rick-btn { background-color: #003300; color: #00ff00; border: 1px solid #00ff00; padding: 15px 40px; font-size: 1.2rem; cursor: pointer; font-weight: bold; transition: 0.3s; font-family: inherit; }
-        .rick-btn:hover { background-color: #00ff00; color: #000; box-shadow: 0 0 20px #00ff00; }
-        #rick-result { margin-top: 25px; padding: 20px; border: 1px dashed #333; display: none; text-align: left; }
-        .scan-line { position: absolute; top: 0; left: 0; width: 100%; height: 5px; background-color: rgba(0, 255, 0, 0.5); animation: scan 3s linear infinite; pointer-events: none; z-index: 0; display: none;} 
-        .scan-line.active { display: block; }
-
-        /* ОБЩИЕ КНОПКИ */
-        .back-btn { background: #333; color: #fff; border: 1px solid #555; padding: 5px 15px; cursor: pointer; font-family: inherit; margin-bottom: 10px;}
-        .back-btn:hover { background: #555; }
-
-        /* МОДАЛКИ */
         .verdict-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); border: 2px solid #fff; padding: 30px; text-align: center; z-index: 100; box-shadow: 0 0 30px rgba(255,255,255,0.2); width: 400px; }
         .v-score { font-size: 36px; font-weight: bold; margin: 10px 0; }
         .v-details-box { background: #111; border: 1px solid #333; padding: 10px; margin-bottom: 20px; max-height: 200px; overflow-y: auto; text-align: left; font-size: 12px; display: none; }
+        
         .feed-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 300px; background: #111; border-left: 1px solid #00ff00; z-index: 50; display: none; flex-direction: column; padding: 10px; }
         .feed-panel.open { display: flex; }
         .feed-item { background: #1a1a1a; padding: 5px; margin-bottom: 5px; border-left: 4px solid #555; font-size: 12px; color: #ccc; }
-        .loader { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(0,255,0,0.3); border-radius: 50%; border-top-color: #00ff00; animation: spin 1s ease-in-out infinite; margin-bottom: -5px; }
     </style>
 </head>
 <body>
 
-    <!-- ЭКРАН ЗАГРУЗКИ -->
+    <!-- ЗАГРУЗЧИК -->
     <div id="loading-overlay">
         <div class="cyber-loader"></div>
         <div class="loading-text" id="loading-msg">ЗАГРУЗКА...</div>
     </div>
 
-    <!-- 1. ЭКРАН ВХОДА -->
+    <!-- 1. ВХОД -->
     <div id="auth-screen" class="screen active">
         <div class="auth-box">
-            <h2 style="margin:0 0 20px 0; color:#00ff00;">SYSTEM LOGIN</h2>
+            <h2 style="margin:0 0 20px 0; color:#00ff00;">ВХОД В СИСТЕМУ</h2>
             <input type="email" id="email" class="auth-input" placeholder="Email адрес">
             <input type="password" id="password" class="auth-input" placeholder="Пароль">
             <button class="auth-btn" id="btnLogin">ВОЙТИ</button>
@@ -140,27 +153,40 @@
 
     <!-- 2. ДАШБОРД -->
     <div id="dashboard-screen" class="screen">
-        <div class="user-welcome">USER: <span id="user-display">...</span> | <span onclick="doLogout()" style="cursor:pointer; text-decoration:underline;">ВЫХОД</span></div>
+        <div class="user-welcome">ПОЛЬЗОВАТЕЛЬ: <span id="user-display">...</span> | <span onclick="doLogout()" style="cursor:pointer; text-decoration:underline;">ВЫХОД</span></div>
         
         <div class="dashboard-container">
             <div class="hub-title">ГЛАВНОЕ МЕНЮ</div>
             <div class="hub-grid">
                 <div class="hub-card" onclick="openTool('virus')">
                     <div class="card-icon">🧬</div>
-                    <div class="card-title">VIRUS HUNTER</div>
-                    <div style="color:#666; font-size:0.8em; margin-top:5px;">File Scanner</div>
+                    <div class="card-title">АНТИВИРУС</div>
+                    <div style="color:#666; font-size:0.8em; margin-top:5px;">Сканер файлов</div>
                 </div>
-                
                 <div class="hub-card" onclick="openTool('rick')">
                     <div class="card-icon">🕵️‍♂️</div>
-                    <div class="card-title">TROLL DETECTOR</div>
-                    <div style="color:#666; font-size:0.8em; margin-top:5px;">Link Scanner</div>
+                    <div class="card-title">АНТИ-ТРОЛЛ</div>
+                    <div style="color:#666; font-size:0.8em; margin-top:5px;">Сканер ссылок</div>
                 </div>
-
                 <div class="hub-card" onclick="openTool('osint')">
                     <div class="card-icon">👁️</div>
-                    <div class="card-title">OSINT SCANNER</div>
-                    <div style="color:#666; font-size:0.8em; margin-top:5px;">IP/Port/Email Tool</div>
+                    <div class="card-title">OSINT СКАНЕР</div>
+                    <div style="color:#666; font-size:0.8em; margin-top:5px;">IP/Порты/Почта</div>
+                </div>
+                <div class="hub-card" onclick="openTool('pass')">
+                    <div class="card-icon">🔐</div>
+                    <div class="card-title">АУДИТ ПАРОЛЕЙ</div>
+                    <div style="color:#666; font-size:0.8em; margin-top:5px;">Проверка/Генерация</div>
+                </div>
+                <div class="hub-card" onclick="openTool('exif')">
+                    <div class="card-icon">📸</div>
+                    <div class="card-title">EXIF ШПИОН</div>
+                    <div style="color:#666; font-size:0.8em; margin-top:5px;">Метаданные фото</div>
+                </div>
+                <div class="hub-card" onclick="openTool('crypto')">
+                    <div class="card-icon">🔓</div>
+                    <div class="card-title">КРИПТО СТАНЦИЯ</div>
+                    <div style="color:#666; font-size:0.8em; margin-top:5px;">Шифрование</div>
                 </div>
             </div>
         </div>
@@ -169,99 +195,129 @@
     <!-- 3. VIRUS HUNTER -->
     <div id="virus-tool" class="screen">
         <div class="vh-header">
-            <button class="back-btn" onclick="showDashboard()">« МЕНЮ</button>
+            <button class="back-btn-abs" style="position:static;" onclick="showDashboard()">« МЕНЮ</button>
             <div style="font-weight:bold;">VIRUS HUNTER v13.2</div>
-            <button class="back-btn" onclick="toggleFeed()">ЛЕНТА</button>
+            <button class="menu-btn" onclick="toggleFeed()">ЛЕНТА</button>
         </div>
 
         <div class="control-bar">
-            <select id="targetType" title="Тип файла">
+            <select id="targetType" title="Тип">
                 <option value="bat">Batch (.bat)</option>
                 <option value="py">Python (.py)</option>
                 <option value="exe">Binary (.exe)</option>
                 <option value="jar">Java (.jar)</option>
                 <option value="vbs">VBScript (.vbs)</option>
-                <option value="ps1">PowerShell (.ps1)</option>
-                <option value="web">Web (.html/.js)</option>
-                <option value="zip">Archive (.zip)</option>
+                <option value="ps1">PowerShell</option>
+                <option value="web">Web (.js/.html)</option>
+                <option value="zip">Архив (.zip)</option>
             </select>
             <input type="file" id="fileInput">
-            <select id="scanMode" title="Режим">
-                <option value="fast">Быстрое</option>
-                <option value="auto" disabled>Авто [ЗАКРЫТО]</option>
-                <option value="full" disabled>Полное [ЗАКРЫТО]</option>
-            </select>
+            <select id="scanMode"><option value="fast">Быстрое</option><option value="auto" disabled>Авто [ЗАКРЫТО]</option><option value="full" disabled>Полное [ЗАКРЫТО]</option></select>
             <button id="btnScan" disabled onclick="startScanLogic()">ЗАПУСК</button>
         </div>
-
-        <div class="terminal" id="terminal">
-            <div class="sys">> Модуль Virus Hunter загружен... Готов.</div>
-        </div>
+        <div class="terminal" id="terminal"><div class="sys">> Модуль готов к работе.</div></div>
     </div>
 
-    <!-- 4. RICKROLL DETECTOR -->
+    <!-- 4. RICKROLL DETECTOR (OLD STYLE) -->
     <div id="rick-tool" class="screen">
-        <div class="scan-line" id="rickScanLine"></div>
-        <div style="position:absolute; top:20px; left:20px; z-index:10;">
-            <button class="back-btn" onclick="showDashboard()">« МЕНЮ</button>
-        </div>
-
-        <div class="rick-container">
-            <h1>🕵️‍♂️ Anti-Troll System v3.0</h1>
-            <p>Вставь ссылку на видео. Система проверит ID, домен и название.</p>
-            <input type="text" id="urlInput" class="rick-input" placeholder="Вставь ссылку сюда..." autocomplete="off">
+        <div class="scan-line"></div>
+        <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
+        
+        <div class="rick-legacy-container">
+            <h1>🕵️‍♂️ Anti-Troll v3.0</h1>
+            <p style="color:#ccc; font-family:sans-serif;">Вставьте ссылку. Система проверит ID, домен и название.</p>
+            
+            <input type="text" id="urlInput" class="rick-input" placeholder="Вставьте ссылку сюда..." autocomplete="off">
             <br>
             <button onclick="startRickScan()" id="rickScanBtn" class="rick-btn">АНАЛИЗИРОВАТЬ</button>
+
             <div id="rick-result"></div>
         </div>
-        <audio id="rickPlayer" loop>
-            <source src="https://ia801602.us.archive.org/11/items/Rick_Astley_Never_Gonna_Give_You_Up/Rick_Astley_Never_Gonna_Give_You_Up.mp3" type="audio/mpeg">
-        </audio>
+        <audio id="rickPlayer" loop><source src="https://ia801602.us.archive.org/11/items/Rick_Astley_Never_Gonna_Give_You_Up/Rick_Astley_Never_Gonna_Give_You_Up.mp3" type="audio/mpeg"></audio>
     </div>
 
     <!-- 5. OSINT SCANNER -->
     <div id="osint-tool" class="screen">
-        <div style="position:absolute; top:20px; left:20px; z-index:10;">
-            <button class="back-btn" onclick="showDashboard()">« МЕНЮ</button>
-        </div>
-        <div class="osint-container">
-            <h1 style="text-align:center; margin-bottom:20px;">👁️ OSINT TOOLKIT</h1>
-            <div class="osint-bar">
+        <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
+        <div class="module-container">
+            <h1 style="text-align:center;">👁️ OSINT ИНСТРУМЕНТЫ</h1>
+            <div class="action-bar">
                 <select id="osintType" style="width:150px;" onchange="updateOsintPlaceholder()">
-                    <option value="ip">IP ADDRESS</option>
-                    <option value="port">PORT CHECK</option>
-                    <option value="phone">PHONE NUM</option>
-                    <option value="email">EMAIL CHECK</option>
+                    <option value="ip">ПОИСК IP</option>
+                    <option value="port">ПРОВЕРКА ПОРТА</option>
+                    <option value="phone">ТЕЛЕФОН</option>
+                    <option value="email">ПРОВЕРКА ПОЧТЫ</option>
+                    <option value="whois">WHOIS ДОМЕНА</option>
                 </select>
                 <input type="text" id="osintInput" placeholder="Введите IP..." style="flex-grow:1;">
-                <button onclick="startOsintScan()" style="background:#006400; color:white; border:1px solid #00ff00; font-weight:bold; cursor:pointer;">CHECK</button>
+                <button onclick="startOsintScan()" style="width:100px; cursor:pointer;">ПОИСК</button>
             </div>
-            <div id="osint-result" class="osint-result">
-                Ожидание ввода...
-            </div>
+            <div id="osint-result" class="result-box">Ожидание ввода данных...</div>
         </div>
     </div>
 
-    <!-- ВЕРДИКТ -->
-    <div id="verdict" class="verdict-modal">
-        <div class="v-title-text">ОТЧЕТ ОБ АНАЛИЗЕ</div>
-        <div id="v-score" class="v-score">ЧИСТО</div>
-        <div id="v-desc" style="margin-bottom:15px;">Угроз не найдено.</div>
-        <div id="v-details" class="v-details-box">
-            <div style="color:#888; border-bottom:1px solid #333;">ДЕТАЛИ:</div>
-            <ul id="v-list" style="list-style:none; padding:0; margin:0;"></ul>
+    <!-- 6. PASSWORD AUDITOR -->
+    <div id="pass-tool" class="screen">
+        <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
+        <div class="module-container">
+            <h1 style="text-align:center;">🔐 АУДИТ ПАРОЛЕЙ</h1>
+            <div class="action-bar">
+                <input type="text" id="passInput" placeholder="Введите пароль для проверки..." style="flex-grow:1;">
+                <button onclick="checkPass()" style="width:100px; cursor:pointer;">АУДИТ</button>
+                <button onclick="genPass()" style="width:120px; cursor:pointer; border-color:orange; color:orange;">ГЕНЕРИРОВАТЬ</button>
+            </div>
+            <div id="pass-result" class="result-box">Введите пароль или нажмите Генерировать.</div>
         </div>
+    </div>
+
+    <!-- 7. EXIF SPY -->
+    <div id="exif-tool" class="screen">
+        <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
+        <div class="module-container">
+            <h1 style="text-align:center;">📸 EXIF ШПИОН</h1>
+            <div style="text-align:center; margin-bottom:15px;">
+                <input type="file" id="exifInput" accept="image/*" style="width:100%;">
+            </div>
+            <div id="exif-result" class="result-box">Загрузите изображение (JPG/TIFF) для извлечения скрытых данных...</div>
+        </div>
+    </div>
+
+    <!-- 8. CRYPTO STATION -->
+    <div id="crypto-tool" class="screen">
+        <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
+        <div class="module-container">
+            <h1 style="text-align:center;">🔓 КРИПТО СТАНЦИЯ</h1>
+            <div class="action-bar">
+                <select id="cryptoType" style="width:150px;">
+                    <option value="base64">Base64</option>
+                    <option value="binary">Бинарный (01)</option>
+                    <option value="hex">HEX (16-ричный)</option>
+                    <option value="caesar">Цезарь (+3)</option>
+                    <option value="reverse">Реверс (Задом наперед)</option>
+                </select>
+                <button onclick="doCrypto('enc')" style="flex-grow:1; cursor:pointer;">ЗАШИФРОВАТЬ</button>
+                <button onclick="doCrypto('dec')" style="flex-grow:1; cursor:pointer; border-color:orange; color:orange;">РАСШИФРОВАТЬ</button>
+            </div>
+            <textarea id="cryptoInput" placeholder="Введите текст..." style="width:100%; height:100px; background:#000; border:1px solid #333; color:#00ff00; padding:10px; box-sizing:border-box; margin-bottom:10px;"></textarea>
+            <div id="crypto-result" class="result-box" style="min-height:50px;">Результат...</div>
+        </div>
+    </div>
+
+    <!-- ВЕРДИКТ & ЛЕНТА -->
+    <div id="verdict" class="verdict-modal">
+        <div class="v-title-text">ОТЧЕТ</div>
+        <div id="v-score" class="v-score">ЧИСТО</div>
+        <div id="v-desc">Угроз не обнаружено.</div>
+        <div id="v-details" class="v-details-box"><ul id="v-list" style="list-style:none; padding:0;"></ul></div>
         <button onclick="document.getElementById('verdict').style.display='none'" style="background:none; border:1px solid #fff; color:#fff; padding:5px 20px; cursor:pointer;">ЗАКРЫТЬ</button>
     </div>
-
-    <!-- ЛЕНТА -->
     <div class="feed-panel" id="feedPanel">
-        <div style="color:orange; margin-bottom:10px; font-weight:bold;">ГЛОБАЛЬНЫЕ УГРОЗЫ</div>
+        <div style="color:orange; margin-bottom:10px; font-weight:bold;">ГЛОБАЛЬНАЯ ЛЕНТА</div>
         <div id="feed" style="overflow-y:auto; flex:1;">Загрузка...</div>
         <button onclick="toggleFeed()" style="margin-top:10px; background:#333; color:#fff; border:none; padding:5px; cursor:pointer;">ЗАКРЫТЬ</button>
     </div>
 
-    <!-- СКРИПТЫ -->
+    <!-- ЛОГИКА -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
@@ -281,254 +337,212 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        let fileRawData = null;
-        let fileName = "";
-        let fileLines = [];
-        let currentUserSub = 'default';
+        let fileRawData = null, fileName = "", fileLines = [], currentUserSub = 'default';
 
-        // --- ФУНКЦИЯ LISTEN FEED (ПЕРЕМЕЩЕНА ВВЕРХ) ---
-        function listenFeed() {
-            onValue(ref(db, 'scans'), (s) => {
-                const f = document.getElementById('feed');
-                f.innerHTML = "";
-                const d = s.val();
-                if(!d) return;
-                Object.values(d).reverse().slice(0,15).forEach(i => {
-                    let c = "clean";
-                    if(i.score === 1) c = "suspicious";
-                    if(i.score === 2) c = "dangerous";
-                    if(i.score === 3) c = "critical";
-                    
-                    let displayStatus = i.status;
-                    if (displayStatus === "CLEAN") displayStatus = "ЧИСТО";
-                    if (displayStatus === "SUSPICIOUS") displayStatus = "ПОДОЗРИТЕЛЬНО";
-                    if (displayStatus === "DANGEROUS") displayStatus = "ОПАСНО";
-                    if (displayStatus === "VERY DANGEROUS" || displayStatus === "INFECTED") displayStatus = "КРИТИЧНО";
-                    if (displayStatus === "WARNING") displayStatus = "ОПАСНО";
-
-                    f.innerHTML += `<div class="feed-item ${c}"><b>${i.filename}</b><br>${displayStatus}</div>`;
-                });
-            });
-        }
-
-        // UI
+        // --- UI ---
         window.showScreen = (id) => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
-
-        // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ПЕРЕХОДА ---
         window.openTool = (tool) => {
             const loader = document.getElementById('loading-overlay');
             const msg = document.getElementById('loading-msg');
+            const msgs = { 
+                virus: "ЗАГРУЗКА АНТИВИРУСА...", 
+                rick: "ЗАГРУЗКА АНТИ-ТРОЛЛА...", 
+                osint: "ЗАГРУЗКА OSINT...", 
+                pass: "ЗАГРУЗКА АУДИТА...", 
+                exif: "ЗАГРУЗКА EXIF...", 
+                crypto: "ЗАГРУЗКА КРИПТО..." 
+            };
+            msg.innerText = msgs[tool] || "ЗАГРУЗКА...";
             
-            if(tool === 'virus') msg.innerText = "ИНИЦИАЛИЗАЦИЯ VIRUS HUNTER...";
-            if(tool === 'rick') msg.innerText = "ЗАГРУЗКА TROLL DETECTOR...";
-            if(tool === 'osint') msg.innerText = "ЗАГРУЗКА OSINT МОДУЛЕЙ...";
-
-            // 1. Показываем (включаем display:flex)
-            loader.style.display = 'flex';
-            // Принудительная перерисовка (чтобы браузер увидел display перед opacity)
+            // 1. Сначала показываем лоадер ПОВЕРХ всего
+            loader.style.display = 'flex'; 
+            // Форсируем отрисовку
             void loader.offsetWidth; 
-            // Делаем видимым
             loader.style.opacity = '1';
 
+            // 2. Ждем 2.5с
             setTimeout(() => {
-                // 2. СМЕНА ЭКРАНА (В этот момент все еще виден черный лоадер)
+                // 3. МЕНЯЕМ ЭКРАН ПОД ЛОАДЕРОМ
                 if(tool === 'virus') window.showScreen('virus-tool');
                 if(tool === 'rick') window.showScreen('rick-tool');
                 if(tool === 'osint') window.showScreen('osint-tool');
-
-                // 3. Начинаем убирать лоадер
+                if(tool === 'pass') window.showScreen('pass-tool');
+                if(tool === 'exif') window.showScreen('exif-tool');
+                if(tool === 'crypto') window.showScreen('crypto-tool');
+                
+                // 4. УБИРАЕМ ЛОАДЕР
                 loader.style.opacity = '0';
-                
-                // 4. Полностью скрываем после окончания анимации (0.5s)
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                }, 500); 
-                
-            }, 3000); 
+                setTimeout(() => { loader.style.display = 'none'; }, 500);
+            }, 2500);
         }
-
         window.showDashboard = () => window.showScreen('dashboard-screen');
         window.toggleFeed = () => document.getElementById('feedPanel').classList.toggle('open');
         window.doLogout = () => signOut(auth);
-        
-        // Обновление плейсхолдера OSINT
-        window.updateOsintPlaceholder = () => {
-            const type = document.getElementById('osintType').value;
-            const input = document.getElementById('osintInput');
-            if(type === 'ip') input.placeholder = "Введите IP (8.8.8.8)...";
-            if(type === 'port') input.placeholder = "IP:PORT (127.0.0.1:80)...";
-            if(type === 'phone') input.placeholder = "+79001234567...";
-            if(type === 'email') input.placeholder = "name@example.com...";
-        }
 
-        // --- AUTH ---
+        // --- AUTH & FEED ---
         onAuthStateChanged(auth, (user) => {
             if(user) {
                 window.showScreen('dashboard-screen');
                 document.getElementById('user-display').innerText = user.email;
-                loadUser(user.uid);
+                onValue(ref(db, 'Users/'+user.uid), (s) => {
+                    const sub = (s.val() && s.val().Subscribe) ? s.val().Subscribe : 'default';
+                    currentUserSub = sub;
+                    const oA = document.querySelector('option[value="auto"]'), oF = document.querySelector('option[value="full"]');
+                    oA.disabled=true; oA.innerText="Авто [ЗАКРЫТО]"; oF.disabled=true; oF.innerText="Полное [ЗАКРЫТО]";
+                    if(sub==='Auto'||sub==='Full') { oA.disabled=false; oA.innerText="Авто"; }
+                    if(sub==='Full') { oF.disabled=false; oF.innerText="Полное"; }
+                });
                 listenFeed();
-            } else {
-                window.showScreen('auth-screen');
-            }
+            } else window.showScreen('auth-screen');
         });
+        
+        document.getElementById('btnLogin').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value).catch(e=>alert("Ошибка входа"));
+        document.getElementById('btnRegister').onclick = () => createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value).then(c=>set(ref(db,'Users/'+c.user.uid),{email:c.user.email,Subscribe:"default"})).catch(e=>alert(e.message));
 
-        function loadUser(uid) {
-            onValue(ref(db, 'Users/'+uid), (s) => {
-                const d = s.val();
-                const sub = (d && d.Subscribe) ? d.Subscribe : 'default';
-                currentUserSub = sub;
-                const oA = document.querySelector('option[value="auto"]');
-                const oF = document.querySelector('option[value="full"]');
-                oA.disabled=true; oA.innerText="Авто [ЗАКРЫТО]";
-                oF.disabled=true; oF.innerText="Полное [ЗАКРЫТО]";
-                if(sub === 'Auto' || sub === 'Full') { oA.disabled=false; oA.innerText="Авто (Умное)"; }
-                if(sub === 'Full') { oF.disabled=false; oF.innerText="Полное (Глубокое)"; }
+        function listenFeed() {
+            onValue(ref(db, 'scans'), (s) => {
+                const f = document.getElementById('feed'); f.innerHTML=""; const d=s.val(); if(!d)return;
+                Object.values(d).reverse().slice(0,15).forEach(i=>{
+                    let c="clean"; 
+                    if(i.score>=3)c="critical"; else if(i.score==2)c="dangerous"; else if(i.score==1)c="suspicious";
+                    let statusRu = i.status;
+                    if(statusRu === "CLEAN") statusRu = "ЧИСТО";
+                    if(statusRu === "SUSPICIOUS") statusRu = "ПОДОЗРИТЕЛЬНО";
+                    if(statusRu === "DANGEROUS") statusRu = "ОПАСНО";
+                    if(statusRu === "INFECTED" || statusRu === "VERY DANGEROUS") statusRu = "КРИТИЧНО";
+                    if(statusRu === "WARNING") statusRu = "ОПАСНО";
+                    
+                    f.innerHTML+=`<div class="feed-item ${c}"><b>${i.filename}</b><br>${statusRu}</div>`;
+                });
             });
         }
 
-        document.getElementById('btnLogin').onclick = () => {
-            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value)
-            .catch(e => { document.getElementById('auth-error').innerText = "Ошибка входа"; document.getElementById('auth-error').style.display='block'; });
-        };
-        document.getElementById('btnRegister').onclick = () => {
-            const e = document.getElementById('email').value, p = document.getElementById('password').value;
-            if(p.length<6) return alert("Пароль мин. 6 символов");
-            createUserWithEmailAndPassword(auth, e, p)
-            .then(c => set(ref(db, 'Users/'+c.user.uid), {email:e, Subscribe:"default"}))
-            .catch(e => alert(e.message));
-        };
+        // --- 1. VIRUS HUNTER ---
+        const batRules=[{regex:/del\s|erase\s/i,msg:"УДАЛЕНИЕ ФАЙЛА",level:1},{regex:/shutdown/i,msg:"ВЫКЛЮЧЕНИЕ",level:1},{regex:/format\s/i,msg:"ФОРМАТИРОВАНИЕ",level:3},{regex:/reg\s+add/i,msg:"ИЗМЕНЕНИЕ РЕЕСТРА",level:3},{regex:/%0/i,msg:"FORK-БОМБА",level:2}];
+        const pyRules=[{regex:/os\.remove/i,msg:"PY: УДАЛЕНИЕ",level:1},{regex:/ctypes/i,msg:"ВИНЛОКЕР",level:3},{regex:/pynput/i,msg:"КЕЙЛОГГЕР",level:3}];
+        const exeRules=[{regex:/ShellExecute/i,msg:"API: CMD",level:1},{regex:/RegSetValue/i,msg:"API: РЕЕСТР",level:3},{regex:/GetAsyncKeyState/i,msg:"API: ПЕРЕХВАТ",level:3}];
+        const vbsRules=[{regex:/WScript\.Shell/i,msg:"VBS: SHELL",level:1},{regex:/AutoOpen/i,msg:"VBS: МАКРОС",level:2}];
+        
+        document.getElementById('fileInput').onchange=(e)=>{const f=e.target.files[0];if(f){fileName=f.name;fileRawData=f;const t=document.getElementById('targetType').value;const r=new FileReader();r.onload=(ev)=>{fileLines=ev.target.result.split('\n');document.getElementById('btnScan').disabled=false;log(`Файл загружен: ${fileName}`);};if(['exe','jar','zip'].includes(t)||fileName.endsWith('.exe')||fileName.endsWith('.zip'))r.readAsText(f,'ISO-8859-1');else r.readAsText(f,'CP866');}};
+        function log(t,c=""){const term=document.getElementById('terminal');term.innerHTML+=`<div class="log-line ${c}">> ${t}</div>`;term.scrollTop=term.scrollHeight;}
 
-        // --- OSINT LOGIC ---
-        window.startOsintScan = async () => {
-            const type = document.getElementById('osintType').value;
-            const val = document.getElementById('osintInput').value.trim();
-            const res = document.getElementById('osint-result');
+        window.startScanLogic=async()=>{
+            const m=document.getElementById('scanMode').value; const t=document.getElementById('targetType').value;
+            document.getElementById('btnScan').disabled=true; document.getElementById('terminal').innerHTML=""; log(`СКАНИРОВАНИЕ [${m}]...`);
+            let maxL=0; let fT=[]; let rules=batRules; if(t==='py')rules=pyRules; if(t==='exe')rules=exeRules; if(t==='vbs')rules=vbsRules;
             
-            if(!val) return;
-            res.innerHTML = "<span class='loader'></span> Сканирование...";
-
-            await new Promise(r => setTimeout(r, 1000)); 
-
-            let output = "";
-
-            if (type === 'ip') {
-                try {
-                    const req = await fetch(`https://ipwho.is/${val}`);
-                    const data = await req.json();
-                    
-                    if(!data.success) {
-                        output = `<span style="color:red">Ошибка API: ${data.message}</span>`;
-                    } else {
-                        output = `
-<span class="osint-key">IP:</span> ${data.ip}
-<span class="osint-key">Город:</span> ${data.city || 'N/A'}
-<span class="osint-key">Регион:</span> ${data.region || 'N/A'}
-<span class="osint-key">Страна:</span> ${data.country || 'N/A'}
-<span class="osint-key">Провайдер (ISP):</span> ${data.connection.isp || 'N/A'}
-<span class="osint-key">ASN:</span> ${data.connection.asn || 'N/A'}
-<span class="osint-key">Часовой пояс:</span> ${data.timezone.id || 'N/A'}
-                        `;
-                    }
-                } catch(e) { output = `<span style="color:red">Сбой сети. Проверьте подключение.</span>`; }
-            } 
-            else if (type === 'port') {
-                let targetIP = "Неизвестно";
-                let targetPort = val;
-                
-                if(val.includes(":")) {
-                    const parts = val.split(":");
-                    targetIP = parts[0];
-                    targetPort = parts[1];
-                }
-
-                const ports = {
-                    "20": "FTP Data (Передача файлов)", 
-                    "21": "FTP Control (Управление файлами)", 
-                    "22": "SSH (Удаленный доступ)", 
-                    "23": "Telnet (Незащищенный текст)",
-                    "25": "SMTP (Отправка почты)", 
-                    "53": "DNS (Доменные имена)", 
-                    "80": "HTTP (Веб-сайт)", 
-                    "110": "POP3 (Прием почты)", 
-                    "143": "IMAP (Прием почты)",
-                    "443": "HTTPS (Защищенный веб)", 
-                    "3306": "MySQL (База данных)", 
-                    "3389": "RDP (Удаленный стол Windows)",
-                    "8080": "HTTP Proxy / Альт. веб", 
-                    "25565": "Minecraft Server"
-                };
-
-                let serviceInfo = ports[targetPort] || "Неизвестный сервис / Кастомный порт";
-                let statusSim = "ФИЛЬТР / ЗАКРЫТ (Ограничение клиента)";
-                
-                output = `
-<span class="osint-key">Цель:</span> ${targetIP}
-<span class="osint-key">Порт:</span> ${targetPort}
-<span class="osint-key">Сервис:</span> ${serviceInfo}
------------------------------------
-<span class="osint-key">Статус:</span> <span style="color:orange">${statusSim}</span>
-
-<span style="font-size:0.8em; color:#666;">* Примечание: Реальное сканирование портов (NMAP) невозможно из браузера без прокси-сервера. Это справочная информация.</span>
-                `;
+            if(t==='zip'||fileName.endsWith('.zip')){
+                try{const z=new JSZip();const c=await z.loadAsync(fileRawData);for(const[p,e]of Object.entries(c.files)){if(e.dir)continue;log(`ZIP: ${p}`,"zip-entry");if(p.endsWith('.bat')){const txt=await e.async("string");if(txt.includes("del ")){maxL=3;fT.push({msg:`ВИРУС В ZIP: ${p}`,level:3});}}}finish(maxL,m,fT);}catch(e){log("ОШИБКА ZIP","danger");finish(0,m,[]);}return;
             }
-            else if (type === 'phone') {
-                let clean = val.replace(/[^0-9+]/g, '');
-                let country = "Неизвестно";
-                if(clean.startsWith('+7') || clean.startsWith('8')) country = "Россия / Казахстан";
-                if(clean.startsWith('+380')) country = "Украина";
-                if(clean.startsWith('+1')) country = "США / Канада";
-                if(clean.startsWith('+49')) country = "Германия";
-                
-                output = `
-<span class="osint-key">Оригинал:</span> ${val}
-<span class="osint-key">Очищенный:</span> ${clean}
-<span class="osint-key">Регион:</span> ${country}
-<span class="osint-key">Формат верен:</span> ${clean.length >= 10 ? "ДА" : "НЕТ (Слишком короткий)"}
-                `;
+            if(t==='exe'||t==='jar'){
+                const r=new FileReader();r.onload=(e)=>{const txt=e.target.result;if(txt.includes("ShellExecute")||txt.includes("cmd.exe")){maxL=2;fT.push({msg:"ПОДОЗРИТЕЛЬНЫЕ СТРОКИ",level:2});}finish(maxL,m,fT);};r.readAsText(fileRawData,'ISO-8859-1');return;
             }
-            else if (type === 'email') {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                let isValid = emailRegex.test(val);
-                let domain = val.split('@')[1] || "N/A";
-                let isTemp = ["tempmail.com", "10minutemail.com", "guerrillamail.com"].includes(domain);
-                
-                output = `
-<span class="osint-key">Email:</span> ${val}
-<span class="osint-key">Формат верен:</span> ${isValid ? "ДА" : "НЕТ"}
-<span class="osint-key">Домен:</span> ${domain}
-<span class="osint-key">Временная почта:</span> ${isTemp ? "<span style='color:red'>ДА (Одноразовая)</span>" : "НЕТ (Вероятно, настоящая)"}
-                `;
-            }
-
-            res.innerHTML = output;
+            let i=0;function step(){if(i>=fileLines.length){finish(maxL,m,fT);return;}let l=fileLines[i].trim();if(m==='full'&&(t==='bat'||t==='vbs')&&l.includes('^')){l=l.replaceAll('^','');if(Math.random()>0.9)log("ДЕШИФРОВКА...","decrypt");}if(l.length>3&&!l.startsWith('rem')){for(const r of rules){if(r.regex.test(l)){if(r.level>maxL)maxL=r.level;fT.push({msg:r.msg,level:r.level});log(`ОБНАРУЖЕНО: ${r.msg}`,`level-${r.level}`);break;}}}i++;setTimeout(step,2);}step();
+        };
+        function finish(l,m,t){
+            document.getElementById('btnScan').disabled=false; let s="ЧИСТО",c="lime";
+            if(l===1){s="ПОДОЗРИТЕЛЬНО";c="yellow";}if(l===2){s="ОПАСНО";c="orange";}if(l===3){s="КРИТИЧНО";c="red";}
+            log(`РЕЗУЛЬТАТ: ${s}`, "sys");
+            const v=document.getElementById('verdict');v.style.display='block';v.style.borderColor=c;document.getElementById('v-score').innerText=s;document.getElementById('v-score').style.color=c;const lst=document.getElementById('v-list');lst.innerHTML="";
+            if(l>0){document.getElementById('v-details').style.display='block';[...new Set(t.map(x=>JSON.stringify(x)))].map(x=>JSON.parse(x)).forEach(x=>lst.innerHTML+=`<li style="color:${x.level==3?'red':'orange'}">• ${x.msg}</li>`);}else document.getElementById('v-details').style.display='none';
+            push(ref(db,'scans'),{filename:fileName,score:l,status:s,mode:m,user:document.getElementById('user-display').innerText,timestamp:Date.now()});
         }
 
-        // --- VIRUS HUNTER RULES ---
-        const batRules=[{regex:/del\s|erase\s/i,msg:"УДАЛЕНИЕ ФАЙЛА",level:1},{regex:/shutdown/i,msg:"ВЫКЛЮЧЕНИЕ",level:1},{regex:/format\s/i,msg:"ФОРМАТИРОВАНИЕ",level:3},{regex:/reg\s+add/i,msg:"ИЗМЕНЕНИЕ РЕЕСТРА",level:3},{regex:/%0/i,msg:"FORK-БОМБА",level:2}];
-        const pyRules=[{regex:/os\.remove/i,msg:"PY: УДАЛЕНИЕ",level:1},{regex:/ctypes/i,msg:"ВИНЛОКЕР: БЛОК",level:3},{regex:/pynput/i,msg:"КЕЙЛОГГЕР",level:3}];
-        const exeRules=[{regex:/ShellExecute/i,msg:"API: CMD",level:1},{regex:/RegSetValue/i,msg:"API: REGISTRY",level:3},{regex:/GetAsyncKeyState/i,msg:"API: HOOK",level:3}];
-        const vbsRules=[{regex:/WScript\.Shell/i,msg:"VBS: SHELL",level:1},{regex:/AutoOpen/i,msg:"VBS: MACRO",level:2}];
-        
-        document.getElementById('fileInput').onchange=(e)=>{const f=e.target.files[0];if(f){fileName=f.name;fileRawData=f;const t=document.getElementById('targetType').value;const r=new FileReader();r.onload=(ev)=>{fileLines=ev.target.result.split('\n');document.getElementById('btnScan').disabled=false;log(`Файл: ${fileName} загружен.`);};if(['exe','jar','zip'].includes(t)||fileName.endsWith('.exe')||fileName.endsWith('.zip'))r.readAsText(f,'ISO-8859-1');else r.readAsText(f,'CP866');}};
-        function log(t,c=""){const term=document.getElementById('terminal');term.innerHTML+=`<div class="log-line ${c}">> ${t}</div>`;term.scrollTop=term.scrollHeight;}
-        
-        window.startScanLogic=async()=>{
-            const m=document.getElementById('scanMode').value;const t=document.getElementById('targetType').value;
-            document.getElementById('btnScan').disabled=true;document.getElementById('terminal').innerHTML="";log(`СКАНИРОВАНИЕ... [${m}]`);
-            let maxL=0;let fT=[];let rules=batRules;if(t==='py')rules=pyRules;if(t==='exe')rules=exeRules;if(t==='vbs')rules=vbsRules;
-            if(t==='zip'||fileName.endsWith('.zip')){try{const z=new JSZip();const c=await z.loadAsync(fileRawData);for(const[p,e]of Object.entries(c.files)){if(e.dir)continue;log(`Архив: ${p}`,"zip-entry");if(p.endsWith('.bat')){const txt=await e.async("string");if(txt.includes("del ")){maxL=3;fT.push({msg:`MALWARE IN ZIP: ${p}`,level:3});}}}finishScan(maxL,m,fT);}catch(e){log("ZIP Error","danger");}return;}
-            if(t==='exe'||t==='jar'){const r=new FileReader();r.onload=(e)=>{const txt=e.target.result;if(txt.includes("ShellExecute")||txt.includes("cmd.exe")){maxL=2;fT.push({msg:"SUSPICIOUS STRINGS",level:2});}finishScan(maxL,m,fT);};r.readAsText(fileRawData,'ISO-8859-1');return;}
-            let i=0;function step(){if(i>=fileLines.length){finishScan(maxL,m,fT);return;}let l=fileLines[i].trim();if(m==='full'&&(t==='bat'||t==='vbs')&&l.includes('^')){l=l.replaceAll('^','');if(Math.random()>0.9)log("Дешифровка...","decrypt");}if(l.length>3&&!l.startsWith('rem')){for(const r of rules){if(r.regex.test(l)){if(r.level>maxL)maxL=r.level;fT.push({msg:r.msg,level:r.level});log(`ОБНАРУЖЕНО: ${r.msg}`,`level-${r.level}`);break;}}}i++;setTimeout(step,2);}step();};
-        function finishScan(l,m,t){document.getElementById('btnScan').disabled=false;let s="ЧИСТО",c="lime";if(l===1){s="ПОДОЗРИТЕЛЬНО";c="yellow";}if(l===2){s="ОПАСНО";c="orange";}if(l===3){s="КРИТИЧНО";c="red";}log(`РЕЗУЛЬТАТ: ${s}`,"sys");const v=document.getElementById('verdict');v.style.display='block';v.style.borderColor=c;document.getElementById('v-score').innerText=s;document.getElementById('v-score').style.color=c;const list=document.getElementById('v-list');list.innerHTML="";if(l>0){document.getElementById('v-details').style.display='block';document.getElementById('v-desc').innerText="Найдены угрозы!";[...new Set(t.map(x=>JSON.stringify(x)))].map(x=>JSON.parse(x)).forEach(x=>{list.innerHTML+=`<li style="color:${x.level===3?'red':(x.level===2?'orange':'yellow')}">• ${x.msg}</li>`;});}else{document.getElementById('v-details').style.display='none';document.getElementById('v-desc').innerText="Угроз нет.";}push(ref(db,'scans'),{filename:fileName,score:l,status:s,mode:m,user:document.getElementById('user-display').innerText,timestamp:Date.now()});}
-        
-        // --- RICKROLL LOGIC ---
-        const rickIds=["dQw4w9WgXcQ","xvFZjo5PgG0"];const rickDomains=["tomorrowtides.com"];const rickKeywords=["rick","рик","ролл","трол","отправь"];
-        window.startRickScan=async()=>{const a=document.getElementById("rickPlayer");if(a.paused){a.volume=0.3;a.play().catch(()=>{});}const u=document.getElementById('urlInput').value.trim();if(!u)return;const r=document.getElementById('rick-result');r.style.display='block';r.innerHTML='<span class="loader"></span> Сканирование...';await new Promise(res=>setTimeout(res,1500));let id=null;const m=u.match(/^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?)|(shorts\/))\??v?=?([^#&?]*).*/);if(m&&m[8].length==11)id=m[8];if(id&&rickIds.includes(id)){showRickResult("DANGER","ЭТО РИКРОЛЛ!","ID совпал.");return;}for(let d of rickDomains){if(u.includes(d)){showRickResult("DANGER","ФЕЙКОВЫЙ САЙТ","Домен пранков.");return;}}if(currentUserSub!=='Full'){showRickResult("SAFE","БАЗА ЧИСТА","Нет в черном списке (Deep Scan только в FULL).");return;}if(id){try{const req=await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${id}`);const d=await req.json();if(d.title){const tl=d.title.toLowerCase();let fk=rickKeywords.find(w=>tl.includes(w));if(fk)showRickResult("DANGER","СКРЫТАЯ УГРОЗА",`Название: "${d.title}"`);else showRickResult("SAFE","ЧИСТО",`Название: "${d.title}"`);}else showRickResult("SAFE","ЧИСТО","Название не получено.");}catch(e){showRickResult("WARNING","ОШИБКА","Сбой проверки названия.");}}else showRickResult("WARNING","НЕИЗВЕСТНО","Не YouTube.");};
+        // --- 2. RICKROLL ---
+        const rickIds=["dQw4w9WgXcQ"]; const rickDomains=["tomorrowtides.com"];const rickKeywords=["rick","рик","ролл","трол","отправь"];
+        window.startRickScan=async()=>{
+            const u=document.getElementById('urlInput').value.trim(); if(!u)return;
+            const r=document.getElementById('rick-result'); r.style.display='block'; r.innerHTML='Сканирование...';
+            const m=u.match(/v?=([^#&?]*)/);
+            if(m&&rickIds.includes(m[1])){showRickResult("DANGER","ЭТО РИКРОЛЛ!","ID совпал."); return;}
+            if(currentUserSub!=='Full'){showRickResult("SAFE","БАЗА ЧИСТА","Нет в списке (Deep Scan в FULL)."); return;}
+            try{const f=await fetch(`https://noembed.com/embed?url=${u}`);const d=await f.json();
+                if(d.title){
+                    const tl=d.title.toLowerCase();
+                    let fk=rickKeywords.find(w=>tl.includes(w));
+                    if(fk)showRickResult("DANGER","СКРЫТАЯ УГРОЗА",`Название: "${d.title}"`);
+                    else showRickResult("SAFE","ЧИСТО",`Название: "${d.title}"`);
+                } else showRickResult("SAFE","ЧИСТО","Название не получено.");
+            }catch{showRickResult("WARNING","ОШИБКА","Сбой проверки.");}
+        }
         function showRickResult(t,title,desc){const r=document.getElementById('rick-result');let c=t==="DANGER"?"red":(t==="SAFE"?"lime":"orange");r.style.borderColor=c;r.style.color=c;r.innerHTML=`<div style="font-size:1.4em; font-weight:bold;">${title}</div><div style="color:#ccc;">${desc}</div>`;}
+
+        // --- 3. OSINT ---
+        window.updateOsintPlaceholder = () => {
+            const t = document.getElementById('osintType').value;
+            const i = document.getElementById('osintInput');
+            if(t==='whois') i.placeholder = "domain.com...";
+            else i.placeholder = "Введите данные...";
+        }
+        window.startOsintScan=async()=>{
+            const t=document.getElementById('osintType').value; const v=document.getElementById('osintInput').value.trim();
+            const res=document.getElementById('osint-result'); if(!v)return;
+            res.innerHTML="Сканирование..."; await new Promise(r=>setTimeout(r,1000));
+            
+            if(t==='ip'){try{const q=await fetch(`https://ipwho.is/${v}`);const d=await q.json();res.innerHTML=`IP: ${d.ip}\nГород: ${d.city}, ${d.country}\nПровайдер: ${d.connection.isp}`;}catch{res.innerHTML="Ошибка сети.";}}
+            else if(t==='port'){ res.innerHTML=`Порт ${v.split(':')[1]}: ПРОВЕРЕН.\nСтатус: ФИЛЬТР (Браузерное ограничение)`; }
+            else if(t==='whois'){ 
+                try{const q=await fetch(`https://rdap.org/domain/${v}`); const d=await q.json();
+                res.innerHTML=`ДОМЕН: ${d.handle}\nСТАТУС: ${d.status?d.status.join(', '):'N/A'}\nПОРТ 43: ${d.port43 || 'N/A'}`;}
+                catch{res.innerHTML=`WHOIS недоступен для ${v}.`;}
+            }
+            else { res.innerHTML=`Анализ ${v}: ФОРМАТ ВЕРЕН.`; }
+        }
+
+        // --- 4. PASSWORD ---
+        window.checkPass=()=>{
+            const p=document.getElementById('passInput').value; const r=document.getElementById('pass-result');
+            let score=0; if(p.length>8)score++; if(/[A-Z]/.test(p))score++; if(/[0-9]/.test(p))score++; if(/[^a-zA-Z0-9]/.test(p))score++;
+            let msg="СЛАБЫЙ 🔴"; if(score>2)msg="СРЕДНИЙ 🟡"; if(score>3)msg="НАДЕЖНЫЙ 🟢";
+            r.innerHTML=`Пароль: ${"*".repeat(p.length)}\nСложность: ${msg}\nДлина: ${p.length}`;
+        }
+        window.genPass=()=>{
+            const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+            let p=""; for(let i=0;i<16;i++) p+=chars.charAt(Math.floor(Math.random()*chars.length));
+            document.getElementById('passInput').value=p; window.checkPass();
+        }
+
+        // --- 5. EXIF ---
+        document.getElementById('exifInput').onchange=function(e){
+            const f=e.target.files[0]; const r=document.getElementById('exif-result');
+            if(!f)return; r.innerHTML="Анализ...";
+            EXIF.getData(f, function() {
+                const make=EXIF.getTag(this,"Make")||"N/A";
+                const model=EXIF.getTag(this,"Model")||"N/A";
+                const date=EXIF.getTag(this,"DateTime")||"N/A";
+                const lat=EXIF.getTag(this,"GPSLatitude");
+                r.innerHTML=`Файл: ${f.name}\nКамера: ${make} ${model}\nДата: ${date}\nGPS Найден: ${lat?"ДА 🟢":"НЕТ 🔴"}`;
+            });
+        }
+
+        // --- 6. CRYPTO ---
+        window.doCrypto=(act)=>{
+            const t=document.getElementById('cryptoType').value;
+            const inp=document.getElementById('cryptoInput').value;
+            const r=document.getElementById('crypto-result');
+            let out="";
+            try {
+                if(t==='base64') out = act==='enc' ? btoa(inp) : atob(inp);
+                if(t==='binary') {
+                    if(act==='enc') out = inp.split('').map(c=>c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
+                    else out = inp.split(' ').map(b=>String.fromCharCode(parseInt(b,2))).join('');
+                }
+                if(t==='hex') {
+                     if(act==='enc') out = inp.split('').map(c=>c.charCodeAt(0).toString(16)).join(' ');
+                     else out = inp.split(' ').map(h=>String.fromCharCode(parseInt(h,16))).join('');
+                }
+                if(t==='reverse') out = inp.split('').reverse().join('');
+                if(t==='caesar') {
+                    const s = act==='enc'?3:-3;
+                    out = inp.replace(/[a-zA-Z]/g, c => String.fromCharCode((c<="Z"?90:122)>=(c=c.charCodeAt(0)+s)?c:c-26));
+                }
+                r.innerText = out;
+            } catch(e) { r.innerText = "Ошибка!"; }
+        }
+
     </script>
 </body>
 </html>
