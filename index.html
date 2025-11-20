@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER SECURITY HUB v14.4</title>
+    <title>CYBER SECURITY HUB v14.5</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         /* --- ОБЩИЕ СТИЛИ --- */
@@ -391,7 +391,7 @@
             let rules = batRules; // Упрощение: выбор правил как раньше
             if(type==='py') rules=pyRules; if(type==='exe') rules=exeRules; if(type==='vbs') rules=vbsRules;
 
-            // ZIP LOGIC
+            // ZIP LOGIC (Копия из v13.2)
             if(type === 'zip' || fileName.endsWith('.zip')) {
                 try {
                     const zip = new JSZip();
@@ -499,6 +499,14 @@
         const rickIds = ["dQw4w9WgXcQ", "xvFZjo5PgG0", "iik25wqIuFo"]; // (Можно дополнить список)
         const rickDomains = ["tomorrowtides.com", "thisworldthesedays.com"];
 
+        // --- RICKROLL KEYWORDS ---
+        const rickKeywords = [
+            "rick", "rik", "ric", "roll", "rol", "sent friends", "no video",
+            "рик", "ролл", "рол", "не видео", "отправь друзьям", "другу", 
+            "троллинг", "трол", "тролинг", "тролл", "друг", "never gonna", 
+            "you just got", "stickbug", "gnomed"
+        ];
+
         window.startRickScan = async () => {
             const audio = document.getElementById("rickPlayer");
             if(audio.paused) { audio.volume=0.3; audio.play().catch(()=>{}); }
@@ -547,10 +555,17 @@
                 try {
                     const r = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vidID}`);
                     const data = await r.json();
-                    if(data.title && (data.title.toLowerCase().includes("rick") || data.title.toLowerCase().includes("never gonna"))) {
-                        showRickResult("DANGER", "СКРЫТАЯ УГРОЗА", `Название: ${data.title}`);
+                    if(data.title) {
+                        const titleLower = data.title.toLowerCase();
+                        let foundKeyword = rickKeywords.find(word => titleLower.includes(word));
+                        
+                        if(foundKeyword) {
+                            showRickResult("DANGER", "СКРЫТАЯ УГРОЗА", `Название: "${data.title}"<br>Триггер: "${foundKeyword.toUpperCase()}"`);
+                        } else {
+                            showRickResult("SAFE", "ЧИСТО", `Название: "${data.title}"`);
+                        }
                     } else {
-                        showRickResult("SAFE", "ЧИСТО", `Название: ${data.title || 'Неизвестно'}`);
+                        showRickResult("SAFE", "ЧИСТО", "Название не получено.");
                     }
                 } catch(e) { showRickResult("WARNING", "ОШИБКА", "Не удалось проверить название."); }
             } else {
