@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER SECURITY HUB v14.3</title>
+    <title>CYBER SECURITY HUB v14.4</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         /* --- ОБЩИЕ СТИЛИ --- */
@@ -256,6 +256,7 @@
         let fileRawData = null;
         let fileName = "";
         let fileLines = [];
+        let currentUserSub = 'default'; // Глобальная переменная подписки
 
         // --- UI NAVIGATION ---
         window.showScreen = (id) => {
@@ -263,7 +264,7 @@
             document.getElementById(id).classList.add('active');
         }
 
-        // ОТКРЫТИЕ ИНСТРУМЕНТА С АНИМИРОВАННОЙ ЗАГРУЗКОЙ (ИСПРАВЛЕНО)
+        // ОТКРЫТИЕ ИНСТРУМЕНТА С АНИМИРОВАННОЙ ЗАГРУЗКОЙ
         window.openTool = (tool) => {
             const loader = document.getElementById('loading-overlay');
             const msg = document.getElementById('loading-msg');
@@ -273,24 +274,24 @@
 
             // 1. Показываем блок (прозрачный)
             loader.style.display = 'flex';
-            // Форсируем перерисовку, чтобы transition сработал
+            // Форсируем перерисовку
             void loader.offsetWidth; 
             // Делаем видимым
             loader.style.opacity = '1';
 
             // 2. Ждем 3 секунды (загрузка)
             setTimeout(() => {
-                // 3. СНАЧАЛА МЕНЯЕМ ЭКРАН (пока все закрыто черным)
+                // 3. СНАЧАЛА МЕНЯЕМ ЭКРАН
                 if(tool === 'virus') window.showScreen('virus-tool');
                 if(tool === 'rick') window.showScreen('rick-tool');
 
                 // 4. ТОЛЬКО ПОТОМ УБИРАЕМ ЗАГРУЗКУ
                 loader.style.opacity = '0';
                 
-                // 5. Убираем блок из DOM после завершения анимации исчезновения
+                // 5. Убираем блок из DOM
                 setTimeout(() => {
                     loader.style.display = 'none';
-                }, 500); // Время анимации opacity
+                }, 500); 
                 
             }, 3000); // 3 секунды
         }
@@ -316,6 +317,8 @@
             onValue(ref(db, 'Users/'+uid), (s) => {
                 const d = s.val();
                 const sub = (d && d.Subscribe) ? d.Subscribe : 'default';
+                currentUserSub = sub; // Сохраняем подписку глобально
+                
                 // Разблокировка режимов вируса
                 const oA = document.querySelector('option[value="auto"]');
                 const oF = document.querySelector('option[value="full"]');
@@ -388,7 +391,7 @@
             let rules = batRules; // Упрощение: выбор правил как раньше
             if(type==='py') rules=pyRules; if(type==='exe') rules=exeRules; if(type==='vbs') rules=vbsRules;
 
-            // ZIP LOGIC (Копия из v13.2)
+            // ZIP LOGIC
             if(type === 'zip' || fileName.endsWith('.zip')) {
                 try {
                     const zip = new JSZip();
@@ -533,7 +536,13 @@
                 }
             }
 
-            // 3. TITLE CHECK (Fetch)
+            // 3. TITLE CHECK (Ограничено для НЕ-FULL)
+            if (currentUserSub !== 'Full') {
+                showRickResult("SAFE", "БАЗА ЧИСТА", "В черном списке ссылок не найдено.<br><span style='color:gray; font-size:0.8em;'>(Глубокий анализ названий доступен только в FULL)</span>");
+                return;
+            }
+
+            // ... Deep Scan (Только для Full) ...
             if(vidID) {
                 try {
                     const r = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vidID}`);
