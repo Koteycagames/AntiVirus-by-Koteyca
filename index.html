@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER SECURITY HUB v15.3</title>
+    <title>CYBER SECURITY HUB v15.5</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         /* --- ОБЩИЕ СТИЛИ --- */
@@ -145,21 +145,18 @@
         <div class="dashboard-container">
             <div class="hub-title">ГЛАВНОЕ МЕНЮ</div>
             <div class="hub-grid">
-                <!-- Кнопка Антивируса -->
                 <div class="hub-card" onclick="openTool('virus')">
                     <div class="card-icon">🧬</div>
                     <div class="card-title">VIRUS HUNTER</div>
                     <div style="color:#666; font-size:0.8em; margin-top:5px;">File Scanner</div>
                 </div>
                 
-                <!-- Кнопка Рикролла -->
                 <div class="hub-card" onclick="openTool('rick')">
                     <div class="card-icon">🕵️‍♂️</div>
                     <div class="card-title">TROLL DETECTOR</div>
                     <div style="color:#666; font-size:0.8em; margin-top:5px;">Link Scanner</div>
                 </div>
 
-                <!-- НОВЫЙ МОДУЛЬ -->
                 <div class="hub-card" onclick="openTool('osint')">
                     <div class="card-icon">👁️</div>
                     <div class="card-title">OSINT SCANNER</div>
@@ -169,7 +166,7 @@
         </div>
     </div>
 
-    <!-- 3. VIRUS HUNTER TOOL -->
+    <!-- 3. VIRUS HUNTER -->
     <div id="virus-tool" class="screen">
         <div class="vh-header">
             <button class="back-btn" onclick="showDashboard()">« МЕНЮ</button>
@@ -202,7 +199,7 @@
         </div>
     </div>
 
-    <!-- 4. RICKROLL DETECTOR TOOL -->
+    <!-- 4. RICKROLL DETECTOR -->
     <div id="rick-tool" class="screen">
         <div class="scan-line" id="rickScanLine"></div>
         <div style="position:absolute; top:20px; left:20px; z-index:10;">
@@ -212,20 +209,17 @@
         <div class="rick-container">
             <h1>🕵️‍♂️ Anti-Troll System v3.0</h1>
             <p>Вставь ссылку на видео. Система проверит ID, домен и название.</p>
-            
             <input type="text" id="urlInput" class="rick-input" placeholder="Вставь ссылку сюда..." autocomplete="off">
             <br>
             <button onclick="startRickScan()" id="rickScanBtn" class="rick-btn">АНАЛИЗИРОВАТЬ</button>
-
             <div id="rick-result"></div>
         </div>
-        <!-- Аудио для троллинга (RickRoll) -->
         <audio id="rickPlayer" loop>
             <source src="https://ia801602.us.archive.org/11/items/Rick_Astley_Never_Gonna_Give_You_Up/Rick_Astley_Never_Gonna_Give_You_Up.mp3" type="audio/mpeg">
         </audio>
     </div>
 
-    <!-- 5. OSINT SCANNER (НОВЫЙ) -->
+    <!-- 5. OSINT SCANNER -->
     <div id="osint-tool" class="screen">
         <div style="position:absolute; top:20px; left:20px; z-index:10;">
             <button class="back-btn" onclick="showDashboard()">« МЕНЮ</button>
@@ -239,7 +233,7 @@
                     <option value="phone">PHONE NUM</option>
                     <option value="email">EMAIL CHECK</option>
                 </select>
-                <input type="text" id="osintInput" placeholder="Введите данные..." style="flex-grow:1;">
+                <input type="text" id="osintInput" placeholder="Введите IP..." style="flex-grow:1;">
                 <button onclick="startOsintScan()" style="background:#006400; color:white; border:1px solid #00ff00; font-weight:bold; cursor:pointer;">CHECK</button>
             </div>
             <div id="osint-result" class="osint-result">
@@ -423,22 +417,23 @@
 
             if (type === 'ip') {
                 try {
-                    const req = await fetch(`https://ipapi.co/${val}/json/`);
+                    const req = await fetch(`https://ipwho.is/${val}`);
                     const data = await req.json();
-                    if(data.error) {
-                        output = `<span style="color:red">Ошибка: ${data.reason}</span>`;
+                    
+                    if(!data.success) {
+                        output = `<span style="color:red">Ошибка API: ${data.message}</span>`;
                     } else {
                         output = `
 <span class="osint-key">IP:</span> ${data.ip}
-<span class="osint-key">Город:</span> ${data.city}
-<span class="osint-key">Регион:</span> ${data.region}
-<span class="osint-key">Страна:</span> ${data.country_name}
-<span class="osint-key">Провайдер:</span> ${data.org}
-<span class="osint-key">ASN:</span> ${data.asn}
-<span class="osint-key">Часовой пояс:</span> ${data.timezone}
+<span class="osint-key">Город:</span> ${data.city || 'N/A'}
+<span class="osint-key">Регион:</span> ${data.region || 'N/A'}
+<span class="osint-key">Страна:</span> ${data.country || 'N/A'}
+<span class="osint-key">Провайдер (ISP):</span> ${data.connection.isp || 'N/A'}
+<span class="osint-key">ASN:</span> ${data.connection.asn || 'N/A'}
+<span class="osint-key">Часовой пояс:</span> ${data.timezone.id || 'N/A'}
                         `;
                     }
-                } catch(e) { output = `<span style="color:red">Сбой сети. Введите корректный IP.</span>`; }
+                } catch(e) { output = `<span style="color:red">Сбой сети. Проверьте подключение.</span>`; }
             } 
             else if (type === 'port') {
                 let targetIP = "Неизвестно";
@@ -508,6 +503,7 @@
 <span class="osint-key">Временная почта:</span> ${isTemp ? "<span style='color:red'>ДА (Одноразовая)</span>" : "НЕТ (Вероятно, настоящая)"}
                 `;
             }
+
             res.innerHTML = output;
         }
 
