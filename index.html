@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER SECURITY HUB v14.5</title>
+    <title>CYBER SECURITY HUB v15.3</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         /* --- ОБЩИЕ СТИЛИ --- */
@@ -17,7 +17,7 @@
             overflow: hidden;
         }
 
-        /* Утилиты скрытия/показа экранов */
+        /* Утилиты */
         .screen { display: none; height: 100%; width: 100%; position: relative; }
         .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
@@ -25,12 +25,10 @@
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999;
-            display: none;
-            opacity: 0;
+            display: none; opacity: 0;
             flex-direction: column; align-items: center; justify-content: center;
             transition: opacity 0.5s ease-in-out;
         }
-
         .cyber-loader {
             width: 80px; height: 80px;
             border: 5px solid rgba(0, 255, 0, 0.1);
@@ -40,55 +38,65 @@
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
             margin-bottom: 20px;
         }
-
         .loading-text { font-size: 1.2em; letter-spacing: 2px; animation: blink 1s infinite; }
-
         @keyframes cyber-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes blink { 50% { opacity: 0.5; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- 1. ЭКРАН ВХОДА --- */
+        /* --- ЭЛЕМЕНТЫ ИНТЕРФЕЙСА --- */
         .auth-box { border: 1px solid #00ff00; padding: 30px; width: 300px; text-align: center; box-shadow: 0 0 15px rgba(0, 255, 0, 0.1); background: #050505; }
         .auth-input { width: 100%; padding: 10px; margin-bottom: 10px; background: #000; border: 1px solid #333; color: #00ff00; box-sizing: border-box; font-family: inherit; }
         .auth-btn { width: 100%; padding: 10px; background: #004400; color: #fff; border: none; cursor: pointer; font-weight: bold; margin-bottom: 5px; font-family: inherit; }
         .auth-btn:hover { background: #00ff00; color: #000; }
 
-        /* --- 2. ДАШБОРД --- */
+        /* ДАШБОРД */
         .dashboard-container { text-align: center; animation: fadeIn 0.5s; }
         .hub-title { font-size: 2em; margin-bottom: 40px; text-shadow: 0 0 10px #00ff00; letter-spacing: 3px; text-transform: uppercase; }
-        .hub-grid { display: flex; gap: 30px; justify-content: center; }
+        .hub-grid { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap;}
         
         .hub-card {
-            width: 250px; height: 200px;
-            border: 2px solid #333;
-            background: #111;
+            width: 220px; height: 180px;
+            border: 2px solid #333; background: #111;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s;
-            border-radius: 10px;
+            cursor: pointer; transition: 0.3s; border-radius: 10px;
         }
         .hub-card:hover { border-color: #00ff00; box-shadow: 0 0 20px rgba(0,255,0,0.3); transform: translateY(-5px); }
-        .card-icon { font-size: 4em; margin-bottom: 15px; }
-        .card-title { font-weight: bold; font-size: 1.2em; }
+        .card-icon { font-size: 3.5em; margin-bottom: 15px; }
+        .card-title { font-weight: bold; font-size: 1.1em; }
         .user-welcome { position: absolute; top: 20px; right: 20px; color: #666; font-size: 0.8em; }
 
-        /* --- 3. VIRUS HUNTER UI --- */
+        /* OSINT UI */
+        .osint-container {
+            background-color: #1a1a1a; padding: 20px; border: 1px solid #00ff00;
+            border-radius: 5px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            width: 90%; max-width: 800px; position: relative; z-index: 1;
+        }
+        .osint-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .osint-result { 
+            background: #000; border: 1px solid #333; padding: 15px; 
+            min-height: 200px; white-space: pre-wrap; font-size: 14px; color: #ccc;
+            overflow-y: auto;
+        }
+        .osint-key { color: #00ff00; font-weight: bold; }
+        .port-open { color: lime; font-weight: bold; }
+        .port-closed { color: red; font-weight: bold; }
+
+        /* VIRUS / RICK UI */
         .vh-header { width: 1000px; max-width: 95%; display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
         .control-bar { display: flex; background: #111; border: 1px solid #333; padding: 10px; border-radius: 3px; gap: 5px; width: 1000px; max-width: 95%; box-sizing: border-box; }
-        select, input[type="file"], button { background: #222; color: #e0e0e0; border: 1px solid #444; padding: 8px 12px; font-family: inherit; font-size: 14px; height: 40px; box-sizing: border-box; }
+        select, input[type="file"], input[type="text"], button { background: #222; color: #e0e0e0; border: 1px solid #444; padding: 8px 12px; font-family: inherit; font-size: 14px; height: 40px; box-sizing: border-box; }
         #targetType { width: 180px; } #fileInput { flex-grow: 1; color: #aaa; } #scanMode { width: 160px; }
         #btnScan { background: #006400; color: #fff; border: none; font-weight: bold; width: 120px; cursor: pointer; transition: 0.2s; }
         #btnScan:hover { background: #00ff00; color: #000; }
         #btnScan:disabled { background: #333; color: #555; cursor: not-allowed; }
+        
         .terminal { width: 1000px; max-width: 95%; height: 450px; border: 1px solid #00ff00; background: #000; padding: 15px; overflow-y: auto; margin-top: 10px; font-size: 14px; box-shadow: 0 0 10px rgba(0, 255, 0, 0.05); }
         .log-line { margin-bottom: 4px; word-break: break-all; }
         .level-1 { color: #ffff00; } .level-2 { color: #ff8800; } .level-3 { color: #ff0000; font-weight: bold; }
         .sys { color: #555; } .decrypt { color: #d600ff; } .zip-entry { color: #ffff00; border-top: 1px dashed #333; margin-top: 5px; padding-top: 2px; }
 
-        /* --- 4. RICKROLL DETECTOR UI --- */
-        .rick-container {
-            background-color: #1a1a1a; padding: 2.5rem; border: 1px solid #00ff00;
-            border-radius: 5px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
-            width: 90%; max-width: 700px; text-align: center; position: relative; z-index: 1;
-        }
+        /* RICK UI */
+        .rick-container { background-color: #1a1a1a; padding: 2.5rem; border: 1px solid #00ff00; border-radius: 5px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); width: 90%; max-width: 700px; text-align: center; position: relative; z-index: 1; }
         .rick-input { width: 90%; padding: 15px; background: #000; border: 1px solid #333; color: #00ff00; font-family: inherit; font-size: 1.2rem; margin: 20px 0; text-align: center; }
         .rick-btn { background-color: #003300; color: #00ff00; border: 1px solid #00ff00; padding: 15px 40px; font-size: 1.2rem; cursor: pointer; font-weight: bold; transition: 0.3s; font-family: inherit; }
         .rick-btn:hover { background-color: #00ff00; color: #000; box-shadow: 0 0 20px #00ff00; }
@@ -108,10 +116,6 @@
         .feed-panel.open { display: flex; }
         .feed-item { background: #1a1a1a; padding: 5px; margin-bottom: 5px; border-left: 4px solid #555; font-size: 12px; color: #ccc; }
         .loader { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(0,255,0,0.3); border-radius: 50%; border-top-color: #00ff00; animation: spin 1s ease-in-out infinite; margin-bottom: -5px; }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes scan { 0% { top: -5%; } 100% { top: 105%; } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -134,12 +138,12 @@
         </div>
     </div>
 
-    <!-- 2. ДАШБОРД (ВЫБОР) -->
+    <!-- 2. ДАШБОРД -->
     <div id="dashboard-screen" class="screen">
         <div class="user-welcome">USER: <span id="user-display">...</span> | <span onclick="doLogout()" style="cursor:pointer; text-decoration:underline;">ВЫХОД</span></div>
         
         <div class="dashboard-container">
-            <div class="hub-title">ВЫБЕРИТЕ МОДУЛЬ</div>
+            <div class="hub-title">ГЛАВНОЕ МЕНЮ</div>
             <div class="hub-grid">
                 <!-- Кнопка Антивируса -->
                 <div class="hub-card" onclick="openTool('virus')">
@@ -153,6 +157,13 @@
                     <div class="card-icon">🕵️‍♂️</div>
                     <div class="card-title">TROLL DETECTOR</div>
                     <div style="color:#666; font-size:0.8em; margin-top:5px;">Link Scanner</div>
+                </div>
+
+                <!-- НОВЫЙ МОДУЛЬ -->
+                <div class="hub-card" onclick="openTool('osint')">
+                    <div class="card-icon">👁️</div>
+                    <div class="card-title">OSINT SCANNER</div>
+                    <div style="color:#666; font-size:0.8em; margin-top:5px;">IP/Port/Email Tool</div>
                 </div>
             </div>
         </div>
@@ -214,9 +225,32 @@
         </audio>
     </div>
 
-    <!-- 5. ВЕРДИКТ (VIRUS) -->
+    <!-- 5. OSINT SCANNER (НОВЫЙ) -->
+    <div id="osint-tool" class="screen">
+        <div style="position:absolute; top:20px; left:20px; z-index:10;">
+            <button class="back-btn" onclick="showDashboard()">« МЕНЮ</button>
+        </div>
+        <div class="osint-container">
+            <h1 style="text-align:center; margin-bottom:20px;">👁️ OSINT TOOLKIT</h1>
+            <div class="osint-bar">
+                <select id="osintType" style="width:150px;" onchange="updateOsintPlaceholder()">
+                    <option value="ip">IP ADDRESS</option>
+                    <option value="port">PORT CHECK</option>
+                    <option value="phone">PHONE NUM</option>
+                    <option value="email">EMAIL CHECK</option>
+                </select>
+                <input type="text" id="osintInput" placeholder="Введите данные..." style="flex-grow:1;">
+                <button onclick="startOsintScan()" style="background:#006400; color:white; border:1px solid #00ff00; font-weight:bold; cursor:pointer;">CHECK</button>
+            </div>
+            <div id="osint-result" class="osint-result">
+                Ожидание ввода...
+            </div>
+        </div>
+    </div>
+
+    <!-- ВЕРДИКТ -->
     <div id="verdict" class="verdict-modal">
-        <div style="color:#888;">ОТЧЕТ ОБ АНАЛИЗЕ</div>
+        <div class="v-title-text">ОТЧЕТ ОБ АНАЛИЗЕ</div>
         <div id="v-score" class="v-score">ЧИСТО</div>
         <div id="v-desc" style="margin-bottom:15px;">Угроз не найдено.</div>
         <div id="v-details" class="v-details-box">
@@ -226,7 +260,7 @@
         <button onclick="document.getElementById('verdict').style.display='none'" style="background:none; border:1px solid #fff; color:#fff; padding:5px 20px; cursor:pointer;">ЗАКРЫТЬ</button>
     </div>
 
-    <!-- 6. ЛЕНТА (FEED) -->
+    <!-- ЛЕНТА -->
     <div class="feed-panel" id="feedPanel">
         <div style="color:orange; margin-bottom:10px; font-weight:bold;">ГЛОБАЛЬНЫЕ УГРОЗЫ</div>
         <div id="feed" style="overflow-y:auto; flex:1;">Загрузка...</div>
@@ -256,50 +290,85 @@
         let fileRawData = null;
         let fileName = "";
         let fileLines = [];
-        let currentUserSub = 'default'; // Глобальная переменная подписки
+        let currentUserSub = 'default';
 
-        // --- UI NAVIGATION ---
+        // --- ФУНКЦИЯ LISTEN FEED (ПЕРЕМЕЩЕНА ВВЕРХ) ---
+        function listenFeed() {
+            onValue(ref(db, 'scans'), (s) => {
+                const f = document.getElementById('feed');
+                f.innerHTML = "";
+                const d = s.val();
+                if(!d) return;
+                Object.values(d).reverse().slice(0,15).forEach(i => {
+                    let c = "clean";
+                    if(i.score === 1) c = "suspicious";
+                    if(i.score === 2) c = "dangerous";
+                    if(i.score === 3) c = "critical";
+                    
+                    let displayStatus = i.status;
+                    if (displayStatus === "CLEAN") displayStatus = "ЧИСТО";
+                    if (displayStatus === "SUSPICIOUS") displayStatus = "ПОДОЗРИТЕЛЬНО";
+                    if (displayStatus === "DANGEROUS") displayStatus = "ОПАСНО";
+                    if (displayStatus === "VERY DANGEROUS" || displayStatus === "INFECTED") displayStatus = "КРИТИЧНО";
+                    if (displayStatus === "WARNING") displayStatus = "ОПАСНО";
+
+                    f.innerHTML += `<div class="feed-item ${c}"><b>${i.filename}</b><br>${displayStatus}</div>`;
+                });
+            });
+        }
+
+        // UI
         window.showScreen = (id) => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
-        // ОТКРЫТИЕ ИНСТРУМЕНТА С АНИМИРОВАННОЙ ЗАГРУЗКОЙ
+        // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ПЕРЕХОДА ---
         window.openTool = (tool) => {
             const loader = document.getElementById('loading-overlay');
             const msg = document.getElementById('loading-msg');
             
             if(tool === 'virus') msg.innerText = "ИНИЦИАЛИЗАЦИЯ VIRUS HUNTER...";
             if(tool === 'rick') msg.innerText = "ЗАГРУЗКА TROLL DETECTOR...";
+            if(tool === 'osint') msg.innerText = "ЗАГРУЗКА OSINT МОДУЛЕЙ...";
 
-            // 1. Показываем блок (прозрачный)
+            // 1. Показываем (включаем display:flex)
             loader.style.display = 'flex';
-            // Форсируем перерисовку
+            // Принудительная перерисовка (чтобы браузер увидел display перед opacity)
             void loader.offsetWidth; 
             // Делаем видимым
             loader.style.opacity = '1';
 
-            // 2. Ждем 3 секунды (загрузка)
             setTimeout(() => {
-                // 3. СНАЧАЛА МЕНЯЕМ ЭКРАН
+                // 2. СМЕНА ЭКРАНА (В этот момент все еще виден черный лоадер)
                 if(tool === 'virus') window.showScreen('virus-tool');
                 if(tool === 'rick') window.showScreen('rick-tool');
+                if(tool === 'osint') window.showScreen('osint-tool');
 
-                // 4. ТОЛЬКО ПОТОМ УБИРАЕМ ЗАГРУЗКУ
+                // 3. Начинаем убирать лоадер
                 loader.style.opacity = '0';
                 
-                // 5. Убираем блок из DOM
+                // 4. Полностью скрываем после окончания анимации (0.5s)
                 setTimeout(() => {
                     loader.style.display = 'none';
                 }, 500); 
                 
-            }, 3000); // 3 секунды
+            }, 3000); 
         }
 
         window.showDashboard = () => window.showScreen('dashboard-screen');
-
         window.toggleFeed = () => document.getElementById('feedPanel').classList.toggle('open');
         window.doLogout = () => signOut(auth);
+        
+        // Обновление плейсхолдера OSINT
+        window.updateOsintPlaceholder = () => {
+            const type = document.getElementById('osintType').value;
+            const input = document.getElementById('osintInput');
+            if(type === 'ip') input.placeholder = "Введите IP (8.8.8.8)...";
+            if(type === 'port') input.placeholder = "IP:PORT (127.0.0.1:80)...";
+            if(type === 'phone') input.placeholder = "+79001234567...";
+            if(type === 'email') input.placeholder = "name@example.com...";
+        }
 
         // --- AUTH ---
         onAuthStateChanged(auth, (user) => {
@@ -317,9 +386,7 @@
             onValue(ref(db, 'Users/'+uid), (s) => {
                 const d = s.val();
                 const sub = (d && d.Subscribe) ? d.Subscribe : 'default';
-                currentUserSub = sub; // Сохраняем подписку глобально
-                
-                // Разблокировка режимов вируса
+                currentUserSub = sub;
                 const oA = document.querySelector('option[value="auto"]');
                 const oF = document.querySelector('option[value="full"]');
                 oA.disabled=true; oA.innerText="Авто [ЗАКРЫТО]";
@@ -341,253 +408,131 @@
             .catch(e => alert(e.message));
         };
 
-        // =========================================
-        // === ЛОГИКА VIRUS HUNTER ===
-        // =========================================
-
-        const batRules = [ {regex:/del\s|erase\s/i,msg:"УДАЛЕНИЕ ФАЙЛА",level:1}, {regex:/shutdown/i,msg:"ВЫКЛЮЧЕНИЕ",level:1}, {regex:/format\s/i,msg:"ФОРМАТИРОВАНИЕ",level:3}, {regex:/reg\s+add/i,msg:"ИЗМЕНЕНИЕ РЕЕСТРА",level:3}, {regex:/%0/i,msg:"FORK-БОМБА",level:2} ];
-        const pyRules = [ {regex:/os\.remove/i,msg:"PY: УДАЛЕНИЕ",level:1}, {regex:/ctypes/i,msg:"ВИНЛОКЕР: БЛОК",level:3}, {regex:/pynput/i,msg:"КЕЙЛОГГЕР",level:3} ];
-        const exeRules = [ {regex:/ShellExecute/i,msg:"API: CMD",level:1}, {regex:/RegSetValue/i,msg:"API: REGISTRY",level:3}, {regex:/GetAsyncKeyState/i,msg:"API: HOOK",level:3} ];
-        const vbsRules = [ {regex:/WScript\.Shell/i,msg:"VBS: SHELL",level:1}, {regex:/AutoOpen/i,msg:"VBS: MACRO",level:2} ];
-        
-        // (Остальные правила такие же как в v13.2, сократил для экономии места)
-        // Главный обработчик файла
-        document.getElementById('fileInput').onchange = (e) => {
-            const f = e.target.files[0];
-            if(f) {
-                fileName = f.name;
-                fileRawData = f;
-                const type = document.getElementById('targetType').value;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    fileLines = ev.target.result.split('\n');
-                    document.getElementById('btnScan').disabled = false;
-                    log(`Файл: ${fileName} загружен.`);
-                };
-                if(['exe','jar','zip'].includes(type) || fileName.endsWith('.exe') || fileName.endsWith('.zip')) {
-                    reader.readAsText(f, 'ISO-8859-1');
-                } else {
-                    reader.readAsText(f, 'CP866');
-                }
-            }
-        };
-
-        function log(t, c="") {
-            const term = document.getElementById('terminal');
-            term.innerHTML += `<div class="log-line ${c}">> ${t}</div>`;
-            term.scrollTop = term.scrollHeight;
-        }
-
-        window.startScanLogic = async () => {
-            const mode = document.getElementById('scanMode').value;
-            const type = document.getElementById('targetType').value;
-            document.getElementById('btnScan').disabled = true;
-            document.getElementById('terminal').innerHTML = "";
+        // --- OSINT LOGIC ---
+        window.startOsintScan = async () => {
+            const type = document.getElementById('osintType').value;
+            const val = document.getElementById('osintInput').value.trim();
+            const res = document.getElementById('osint-result');
             
-            log(`СКАНИРОВАНИЕ... [${mode}]`);
-            
-            let maxThreatLevel = 0;
-            let foundThreats = [];
-            let rules = batRules; // Упрощение: выбор правил как раньше
-            if(type==='py') rules=pyRules; if(type==='exe') rules=exeRules; if(type==='vbs') rules=vbsRules;
+            if(!val) return;
+            res.innerHTML = "<span class='loader'></span> Сканирование...";
 
-            // ZIP LOGIC (Копия из v13.2)
-            if(type === 'zip' || fileName.endsWith('.zip')) {
+            await new Promise(r => setTimeout(r, 1000)); 
+
+            let output = "";
+
+            if (type === 'ip') {
                 try {
-                    const zip = new JSZip();
-                    const content = await zip.loadAsync(fileRawData);
-                    for (const [path, entry] of Object.entries(content.files)) {
-                        if(entry.dir) continue;
-                        log(`Архив: ${path}`, "zip-entry");
-                        // Упрощенная проверка внутри архива
-                        if(path.endsWith('.bat')) {
-                            const text = await entry.async("string");
-                            if(text.includes("del ") || text.includes("format ")) {
-                                maxThreatLevel = 3;
-                                foundThreats.push({msg:`MALWARE IN ZIP: ${path}`, level:3});
-                            }
-                        }
-                    }
-                    finishScan(maxThreatLevel, mode, foundThreats);
-                } catch(e) { log("ZIP Error", "danger"); }
-                return;
-            }
-
-            // STANDARD LOOP
-            if(type==='exe' || type==='jar') {
-                // Binary scan logic
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const text = e.target.result;
-                    if(text.includes("ShellExecute") || text.includes("cmd.exe")) {
-                        maxThreatLevel=2; foundThreats.push({msg:"SUSPICIOUS STRINGS", level:2});
-                    }
-                    finishScan(maxThreatLevel, mode, foundThreats);
-                };
-                reader.readAsText(fileRawData, 'ISO-8859-1');
-                return;
-            }
-
-            // Text scan logic
-            let idx=0;
-            function step() {
-                if(idx>=fileLines.length) { finishScan(maxThreatLevel, mode, foundThreats); return; }
-                let line = fileLines[idx].trim();
-                if(line.length>3 && !line.startsWith('rem')) {
-                    for(const r of rules) {
-                        if(r.regex.test(line)) {
-                            if(r.level > maxThreatLevel) maxThreatLevel = r.level;
-                            foundThreats.push({msg:r.msg, level:r.level});
-                            log(`ОБНАРУЖЕНО: ${r.msg}`, `level-${r.level}`);
-                            break;
-                        }
-                    }
-                }
-                idx++;
-                setTimeout(step, 2);
-            }
-            step();
-        };
-
-        function finishScan(maxLevel, mode, threats) {
-            document.getElementById('btnScan').disabled = false;
-            let status = "ЧИСТО"; let color = "lime";
-            if(maxLevel===1) { status="ПОДОЗРИТЕЛЬНО"; color="yellow"; }
-            if(maxLevel===2) { status="ОПАСНО"; color="orange"; }
-            if(maxLevel===3) { status="КРИТИЧНО"; color="red"; }
-            
-            log(`РЕЗУЛЬТАТ: ${status}`, "sys");
-            
-            const v = document.getElementById('verdict');
-            v.style.display = 'block';
-            v.style.borderColor = color;
-            document.getElementById('v-score').innerText = status;
-            document.getElementById('v-score').style.color = color;
-            
-            const list = document.getElementById('v-list');
-            list.innerHTML = "";
-            if(maxLevel > 0) {
-                document.getElementById('v-details').style.display = 'block';
-                document.getElementById('v-desc').innerText = "Найдены угрозы!";
-                [...new Set(threats.map(t=>JSON.stringify(t)))].map(s=>JSON.parse(s)).forEach(t => {
-                    list.innerHTML += `<li style="color:${t.level===3?'red':(t.level===2?'orange':'yellow')}">• ${t.msg}</li>`;
-                });
-            } else {
-                document.getElementById('v-details').style.display = 'none';
-                document.getElementById('v-desc').innerText = "Угроз нет.";
-            }
-
-            push(ref(db, 'scans'), { filename: fileName, score: maxLevel, status: status, mode: mode, user: document.getElementById('user-display').innerText, timestamp: Date.now() });
-        }
-
-        function listenFeed() {
-            onValue(ref(db, 'scans'), (s) => {
-                const f = document.getElementById('feed'); f.innerHTML="";
-                const d = s.val(); if(!d) return;
-                Object.values(d).reverse().slice(0,15).forEach(i=>{
-                    let c="clean"; if(i.score==3)c="critical"; else if(i.score==2)c="dangerous"; else if(i.score==1)c="suspicious";
-                    f.innerHTML+=`<div class="feed-item ${c}"><b>${i.filename}</b><br>${i.status}</div>`;
-                });
-            });
-        }
-
-
-        // =========================================
-        // === ЛОГИКА RICKROLL DETECTOR ===
-        // =========================================
-        
-        const rickIds = ["dQw4w9WgXcQ", "xvFZjo5PgG0", "iik25wqIuFo"]; // (Можно дополнить список)
-        const rickDomains = ["tomorrowtides.com", "thisworldthesedays.com"];
-
-        // --- RICKROLL KEYWORDS ---
-        const rickKeywords = [
-            "rick", "rik", "ric", "roll", "rol", "sent friends", "no video",
-            "рик", "ролл", "рол", "не видео", "отправь друзьям", "другу", 
-            "троллинг", "трол", "тролинг", "тролл", "друг", "never gonna", 
-            "you just got", "stickbug", "gnomed"
-        ];
-
-        window.startRickScan = async () => {
-            const audio = document.getElementById("rickPlayer");
-            if(audio.paused) { audio.volume=0.3; audio.play().catch(()=>{}); }
-
-            const url = document.getElementById('urlInput').value.trim();
-            const res = document.getElementById('rick-result');
-            const btn = document.getElementById('rickScanBtn');
-            const line = document.getElementById('rickScanLine');
-
-            if(!url) return;
-            
-            res.style.display = 'block';
-            res.className = '';
-            res.innerHTML = '<span class="loader"></span> Сканирование...';
-            line.classList.add('active');
-            btn.disabled = true;
-
-            await new Promise(r => setTimeout(r, 1500)); // Эффект анализа
-
-            // 1. ID CHECK
-            let vidID = null;
-            const match = url.match(/^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?)|(shorts\/))\??v?=?([^#&?]*).*/);
-            if (match && match[8].length == 11) vidID = match[8];
-
-            if(vidID && rickIds.includes(vidID)) {
-                showRickResult("DANGER", "ЭТО РИКРОЛЛ!", "ID совпадает с базой данных.");
-                return;
-            }
-
-            // 2. DOMAIN CHECK
-            for(let d of rickDomains) {
-                if(url.includes(d)) {
-                    showRickResult("DANGER", "ФЕЙКОВЫЙ САЙТ", "Этот домен используется для пранков.");
-                    return;
-                }
-            }
-
-            // 3. TITLE CHECK (Ограничено для НЕ-FULL)
-            if (currentUserSub !== 'Full') {
-                showRickResult("SAFE", "БАЗА ЧИСТА", "В черном списке ссылок не найдено.<br><span style='color:gray; font-size:0.8em;'>(Глубокий анализ названий доступен только в FULL)</span>");
-                return;
-            }
-
-            // ... Deep Scan (Только для Full) ...
-            if(vidID) {
-                try {
-                    const r = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vidID}`);
-                    const data = await r.json();
-                    if(data.title) {
-                        const titleLower = data.title.toLowerCase();
-                        let foundKeyword = rickKeywords.find(word => titleLower.includes(word));
-                        
-                        if(foundKeyword) {
-                            showRickResult("DANGER", "СКРЫТАЯ УГРОЗА", `Название: "${data.title}"<br>Триггер: "${foundKeyword.toUpperCase()}"`);
-                        } else {
-                            showRickResult("SAFE", "ЧИСТО", `Название: "${data.title}"`);
-                        }
+                    const req = await fetch(`https://ipapi.co/${val}/json/`);
+                    const data = await req.json();
+                    if(data.error) {
+                        output = `<span style="color:red">Ошибка: ${data.reason}</span>`;
                     } else {
-                        showRickResult("SAFE", "ЧИСТО", "Название не получено.");
+                        output = `
+<span class="osint-key">IP:</span> ${data.ip}
+<span class="osint-key">Город:</span> ${data.city}
+<span class="osint-key">Регион:</span> ${data.region}
+<span class="osint-key">Страна:</span> ${data.country_name}
+<span class="osint-key">Провайдер:</span> ${data.org}
+<span class="osint-key">ASN:</span> ${data.asn}
+<span class="osint-key">Часовой пояс:</span> ${data.timezone}
+                        `;
                     }
-                } catch(e) { showRickResult("WARNING", "ОШИБКА", "Не удалось проверить название."); }
-            } else {
-                showRickResult("WARNING", "НЕИЗВЕСТНО", "Это не YouTube ссылка.");
+                } catch(e) { output = `<span style="color:red">Сбой сети. Введите корректный IP.</span>`; }
+            } 
+            else if (type === 'port') {
+                let targetIP = "Неизвестно";
+                let targetPort = val;
+                
+                if(val.includes(":")) {
+                    const parts = val.split(":");
+                    targetIP = parts[0];
+                    targetPort = parts[1];
+                }
+
+                const ports = {
+                    "20": "FTP Data (Передача файлов)", 
+                    "21": "FTP Control (Управление файлами)", 
+                    "22": "SSH (Удаленный доступ)", 
+                    "23": "Telnet (Незащищенный текст)",
+                    "25": "SMTP (Отправка почты)", 
+                    "53": "DNS (Доменные имена)", 
+                    "80": "HTTP (Веб-сайт)", 
+                    "110": "POP3 (Прием почты)", 
+                    "143": "IMAP (Прием почты)",
+                    "443": "HTTPS (Защищенный веб)", 
+                    "3306": "MySQL (База данных)", 
+                    "3389": "RDP (Удаленный стол Windows)",
+                    "8080": "HTTP Proxy / Альт. веб", 
+                    "25565": "Minecraft Server"
+                };
+
+                let serviceInfo = ports[targetPort] || "Неизвестный сервис / Кастомный порт";
+                let statusSim = "ФИЛЬТР / ЗАКРЫТ (Ограничение клиента)";
+                
+                output = `
+<span class="osint-key">Цель:</span> ${targetIP}
+<span class="osint-key">Порт:</span> ${targetPort}
+<span class="osint-key">Сервис:</span> ${serviceInfo}
+-----------------------------------
+<span class="osint-key">Статус:</span> <span style="color:orange">${statusSim}</span>
+
+<span style="font-size:0.8em; color:#666;">* Примечание: Реальное сканирование портов (NMAP) невозможно из браузера без прокси-сервера. Это справочная информация.</span>
+                `;
             }
+            else if (type === 'phone') {
+                let clean = val.replace(/[^0-9+]/g, '');
+                let country = "Неизвестно";
+                if(clean.startsWith('+7') || clean.startsWith('8')) country = "Россия / Казахстан";
+                if(clean.startsWith('+380')) country = "Украина";
+                if(clean.startsWith('+1')) country = "США / Канада";
+                if(clean.startsWith('+49')) country = "Германия";
+                
+                output = `
+<span class="osint-key">Оригинал:</span> ${val}
+<span class="osint-key">Очищенный:</span> ${clean}
+<span class="osint-key">Регион:</span> ${country}
+<span class="osint-key">Формат верен:</span> ${clean.length >= 10 ? "ДА" : "НЕТ (Слишком короткий)"}
+                `;
+            }
+            else if (type === 'email') {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                let isValid = emailRegex.test(val);
+                let domain = val.split('@')[1] || "N/A";
+                let isTemp = ["tempmail.com", "10minutemail.com", "guerrillamail.com"].includes(domain);
+                
+                output = `
+<span class="osint-key">Email:</span> ${val}
+<span class="osint-key">Формат верен:</span> ${isValid ? "ДА" : "НЕТ"}
+<span class="osint-key">Домен:</span> ${domain}
+<span class="osint-key">Временная почта:</span> ${isTemp ? "<span style='color:red'>ДА (Одноразовая)</span>" : "НЕТ (Вероятно, настоящая)"}
+                `;
+            }
+            res.innerHTML = output;
         }
 
-        function showRickResult(type, title, desc) {
-            const res = document.getElementById('rick-result');
-            const btn = document.getElementById('rickScanBtn');
-            const line = document.getElementById('rickScanLine');
-            
-            line.classList.remove('active');
-            btn.disabled = false;
-            
-            let color = type==="DANGER"?"red":(type==="SAFE"?"lime":"orange");
-            res.style.borderColor = color;
-            res.style.color = color;
-            
-            res.innerHTML = `<div style="font-size:1.4em; font-weight:bold;">${title}</div><div style="color:#ccc; margin-top:5px;">${desc}</div>`;
-        }
-
+        // --- VIRUS HUNTER RULES ---
+        const batRules=[{regex:/del\s|erase\s/i,msg:"УДАЛЕНИЕ ФАЙЛА",level:1},{regex:/shutdown/i,msg:"ВЫКЛЮЧЕНИЕ",level:1},{regex:/format\s/i,msg:"ФОРМАТИРОВАНИЕ",level:3},{regex:/reg\s+add/i,msg:"ИЗМЕНЕНИЕ РЕЕСТРА",level:3},{regex:/%0/i,msg:"FORK-БОМБА",level:2}];
+        const pyRules=[{regex:/os\.remove/i,msg:"PY: УДАЛЕНИЕ",level:1},{regex:/ctypes/i,msg:"ВИНЛОКЕР: БЛОК",level:3},{regex:/pynput/i,msg:"КЕЙЛОГГЕР",level:3}];
+        const exeRules=[{regex:/ShellExecute/i,msg:"API: CMD",level:1},{regex:/RegSetValue/i,msg:"API: REGISTRY",level:3},{regex:/GetAsyncKeyState/i,msg:"API: HOOK",level:3}];
+        const vbsRules=[{regex:/WScript\.Shell/i,msg:"VBS: SHELL",level:1},{regex:/AutoOpen/i,msg:"VBS: MACRO",level:2}];
+        
+        document.getElementById('fileInput').onchange=(e)=>{const f=e.target.files[0];if(f){fileName=f.name;fileRawData=f;const t=document.getElementById('targetType').value;const r=new FileReader();r.onload=(ev)=>{fileLines=ev.target.result.split('\n');document.getElementById('btnScan').disabled=false;log(`Файл: ${fileName} загружен.`);};if(['exe','jar','zip'].includes(t)||fileName.endsWith('.exe')||fileName.endsWith('.zip'))r.readAsText(f,'ISO-8859-1');else r.readAsText(f,'CP866');}};
+        function log(t,c=""){const term=document.getElementById('terminal');term.innerHTML+=`<div class="log-line ${c}">> ${t}</div>`;term.scrollTop=term.scrollHeight;}
+        
+        window.startScanLogic=async()=>{
+            const m=document.getElementById('scanMode').value;const t=document.getElementById('targetType').value;
+            document.getElementById('btnScan').disabled=true;document.getElementById('terminal').innerHTML="";log(`СКАНИРОВАНИЕ... [${m}]`);
+            let maxL=0;let fT=[];let rules=batRules;if(t==='py')rules=pyRules;if(t==='exe')rules=exeRules;if(t==='vbs')rules=vbsRules;
+            if(t==='zip'||fileName.endsWith('.zip')){try{const z=new JSZip();const c=await z.loadAsync(fileRawData);for(const[p,e]of Object.entries(c.files)){if(e.dir)continue;log(`Архив: ${p}`,"zip-entry");if(p.endsWith('.bat')){const txt=await e.async("string");if(txt.includes("del ")){maxL=3;fT.push({msg:`MALWARE IN ZIP: ${p}`,level:3});}}}finishScan(maxL,m,fT);}catch(e){log("ZIP Error","danger");}return;}
+            if(t==='exe'||t==='jar'){const r=new FileReader();r.onload=(e)=>{const txt=e.target.result;if(txt.includes("ShellExecute")||txt.includes("cmd.exe")){maxL=2;fT.push({msg:"SUSPICIOUS STRINGS",level:2});}finishScan(maxL,m,fT);};r.readAsText(fileRawData,'ISO-8859-1');return;}
+            let i=0;function step(){if(i>=fileLines.length){finishScan(maxL,m,fT);return;}let l=fileLines[i].trim();if(m==='full'&&(t==='bat'||t==='vbs')&&l.includes('^')){l=l.replaceAll('^','');if(Math.random()>0.9)log("Дешифровка...","decrypt");}if(l.length>3&&!l.startsWith('rem')){for(const r of rules){if(r.regex.test(l)){if(r.level>maxL)maxL=r.level;fT.push({msg:r.msg,level:r.level});log(`ОБНАРУЖЕНО: ${r.msg}`,`level-${r.level}`);break;}}}i++;setTimeout(step,2);}step();};
+        function finishScan(l,m,t){document.getElementById('btnScan').disabled=false;let s="ЧИСТО",c="lime";if(l===1){s="ПОДОЗРИТЕЛЬНО";c="yellow";}if(l===2){s="ОПАСНО";c="orange";}if(l===3){s="КРИТИЧНО";c="red";}log(`РЕЗУЛЬТАТ: ${s}`,"sys");const v=document.getElementById('verdict');v.style.display='block';v.style.borderColor=c;document.getElementById('v-score').innerText=s;document.getElementById('v-score').style.color=c;const list=document.getElementById('v-list');list.innerHTML="";if(l>0){document.getElementById('v-details').style.display='block';document.getElementById('v-desc').innerText="Найдены угрозы!";[...new Set(t.map(x=>JSON.stringify(x)))].map(x=>JSON.parse(x)).forEach(x=>{list.innerHTML+=`<li style="color:${x.level===3?'red':(x.level===2?'orange':'yellow')}">• ${x.msg}</li>`;});}else{document.getElementById('v-details').style.display='none';document.getElementById('v-desc').innerText="Угроз нет.";}push(ref(db,'scans'),{filename:fileName,score:l,status:s,mode:m,user:document.getElementById('user-display').innerText,timestamp:Date.now()});}
+        
+        // --- RICKROLL LOGIC ---
+        const rickIds=["dQw4w9WgXcQ","xvFZjo5PgG0"];const rickDomains=["tomorrowtides.com"];const rickKeywords=["rick","рик","ролл","трол","отправь"];
+        window.startRickScan=async()=>{const a=document.getElementById("rickPlayer");if(a.paused){a.volume=0.3;a.play().catch(()=>{});}const u=document.getElementById('urlInput').value.trim();if(!u)return;const r=document.getElementById('rick-result');r.style.display='block';r.innerHTML='<span class="loader"></span> Сканирование...';await new Promise(res=>setTimeout(res,1500));let id=null;const m=u.match(/^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?)|(shorts\/))\??v?=?([^#&?]*).*/);if(m&&m[8].length==11)id=m[8];if(id&&rickIds.includes(id)){showRickResult("DANGER","ЭТО РИКРОЛЛ!","ID совпал.");return;}for(let d of rickDomains){if(u.includes(d)){showRickResult("DANGER","ФЕЙКОВЫЙ САЙТ","Домен пранков.");return;}}if(currentUserSub!=='Full'){showRickResult("SAFE","БАЗА ЧИСТА","Нет в черном списке (Deep Scan только в FULL).");return;}if(id){try{const req=await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${id}`);const d=await req.json();if(d.title){const tl=d.title.toLowerCase();let fk=rickKeywords.find(w=>tl.includes(w));if(fk)showRickResult("DANGER","СКРЫТАЯ УГРОЗА",`Название: "${d.title}"`);else showRickResult("SAFE","ЧИСТО",`Название: "${d.title}"`);}else showRickResult("SAFE","ЧИСТО","Название не получено.");}catch(e){showRickResult("WARNING","ОШИБКА","Сбой проверки названия.");}}else showRickResult("WARNING","НЕИЗВЕСТНО","Не YouTube.");};
+        function showRickResult(t,title,desc){const r=document.getElementById('rick-result');let c=t==="DANGER"?"red":(t==="SAFE"?"lime":"orange");r.style.borderColor=c;r.style.color=c;r.innerHTML=`<div style="font-size:1.4em; font-weight:bold;">${title}</div><div style="color:#ccc;">${desc}</div>`;}
     </script>
 </body>
 </html>
