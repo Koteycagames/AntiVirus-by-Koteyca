@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CYBER SECURITY HUB v16.3</title>
+    <title>CYBER SECURITY HUB v20.0</title>
     <!-- Библиотеки -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
@@ -57,42 +57,67 @@
         .auth-btn:hover { background: #00ff00; color: #000; }
 
         /* --- ДАШБОРД --- */
-        .dashboard-container { text-align: center; animation: fadeIn 0.5s; max-width: 900px; }
-        .hub-title { font-size: 2em; margin-bottom: 40px; text-shadow: 0 0 10px #00ff00; letter-spacing: 3px; text-transform: uppercase; }
-        .hub-grid { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+        .dashboard-container { text-align: center; animation: fadeIn 0.5s; max-width: 1000px; }
+        .hub-title { font-size: 2em; margin-bottom: 30px; text-shadow: 0 0 10px #00ff00; letter-spacing: 3px; text-transform: uppercase; }
+        .hub-grid { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
         
         .hub-card {
-            width: 160px; height: 160px;
+            width: 150px; height: 140px;
             border: 2px solid #333; background: #111;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; transition: 0.3s; border-radius: 10px; position: relative;
         }
         .hub-card:hover { border-color: #00ff00; box-shadow: 0 0 20px rgba(0,255,0,0.3); transform: translateY(-5px); }
         
-        /* Стили для заблокированных */
         .hub-card.locked { opacity: 0.4; filter: grayscale(100%); border-color: #555; cursor: not-allowed; }
         .hub-card.locked:hover { transform: none; box-shadow: none; border-color: #555; }
-        .lock-icon { position: absolute; top: 10px; right: 10px; font-size: 1.2em; color: #fff; display: none; }
+        .lock-icon { position: absolute; top: 5px; right: 5px; font-size: 1em; color: #fff; display: none; }
         .hub-card.locked .lock-icon { display: block; }
 
-        .card-icon { font-size: 3em; margin-bottom: 10px; }
-        .card-title { font-weight: bold; font-size: 0.8em; text-align: center; text-transform: uppercase; }
+        .hub-card.soon { opacity: 0.5; border-color: #444; cursor: default; }
+        .hub-card.soon:hover { transform: none; box-shadow: none; border-color: #444; }
+        .soon-text { color: #ff0000; font-size: 0.7em; margin-top: 5px; font-weight: bold; letter-spacing: 1px; text-shadow: 0 0 5px red; }
+
+        .card-icon { font-size: 2.5em; margin-bottom: 10px; }
+        .card-title { font-weight: bold; font-size: 0.75em; text-align: center; text-transform: uppercase; }
         .user-welcome { position: absolute; top: 20px; right: 20px; color: #666; font-size: 0.8em; }
 
         /* --- МОДУЛИ (UI) --- */
         .module-container {
             background-color: #1a1a1a; padding: 20px; border: 1px solid #00ff00;
             border-radius: 5px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
-            width: 90%; max-width: 800px; position: relative; z-index: 1; animation: fadeIn 0.3s;
+            width: 90%; max-width: 900px; position: relative; z-index: 1; animation: fadeIn 0.3s;
         }
+
+        /* FOOTPRINT UI */
+        .fp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin-top: 15px; }
+        .fp-item { border-bottom: 1px dashed #333; padding: 5px; }
+        .fp-label { color: #888; font-size: 0.9em; }
+        .fp-value { color: #00ff00; font-weight: bold; display: block; }
+        
+        /* EDITOR UI */
+        .editor-controls { 
+            display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; 
+            background: #111; padding: 10px; border: 1px solid #333; justify-content: space-between;
+        }
+        .editor-group { display: flex; gap: 5px; align-items: center; }
+        .editor-label { font-size: 0.8em; color: #888; }
+        .editor-textarea {
+            width: 100%; height: 400px; background: #000; color: #0f0;
+            border: 1px solid #333; padding: 15px; font-family: 'Consolas', monospace;
+            font-size: 16px; resize: none; outline: none; box-sizing: border-box;
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+        }
+        .editor-textarea:focus { border-color: #00ff00; }
+        .glow-text { text-shadow: 0 0 5px currentColor; }
         
         /* Virus Hunter UI */
         .vh-header { width: 1000px; max-width: 95%; display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center; }
         .control-bar { display: flex; background: #111; border: 1px solid #333; padding: 10px; border-radius: 3px; gap: 5px; width: 1000px; max-width: 95%; box-sizing: border-box; }
-        select, input[type="file"], input[type="text"], button { background: #222; color: #e0e0e0; border: 1px solid #444; padding: 8px 12px; font-family: inherit; font-size: 14px; height: 40px; box-sizing: border-box; }
+        select, input[type="file"], input[type="text"], button, input[type="number"], input[type="color"] { 
+            background: #222; color: #e0e0e0; border: 1px solid #444; padding: 5px 10px; font-family: inherit; font-size: 14px; height: 40px; box-sizing: border-box; 
+        }
         #targetType { width: 180px; } #fileInput { flex-grow: 1; color: #aaa; } #scanMode { width: 160px; }
-        
-        /* Опции с замком */
         option:disabled { color: #555; background: #111; }
 
         #btnScan { background: #006400; color: #fff; border: none; font-weight: bold; width: 120px; cursor: pointer; transition: 0.2s; }
@@ -101,10 +126,7 @@
         .terminal { width: 1000px; max-width: 95%; height: 450px; border: 1px solid #00ff00; background: #000; padding: 15px; overflow-y: auto; margin-top: 10px; font-size: 14px; box-shadow: 0 0 10px rgba(0, 255, 0, 0.05); }
         
         /* Элементы модулей */
-        .result-box { 
-            background: #000; border: 1px solid #333; padding: 15px; 
-            min-height: 150px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; font-size: 14px; color: #ccc; margin-top: 10px;
-        }
+        .result-box { background: #000; border: 1px solid #333; padding: 15px; min-height: 150px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; font-size: 14px; color: #ccc; margin-top: 10px; }
         .action-bar { display: flex; gap: 10px; margin-bottom: 10px; }
         .key-val { margin-bottom: 5px; border-bottom: 1px dashed #333; padding-bottom: 2px; }
         .key { color: #00ff00; font-weight: bold; margin-right: 10px; }
@@ -116,12 +138,8 @@
         .back-btn-abs { position: absolute; top: 20px; left: 20px; z-index: 10; background: #333; color: #fff; border: 1px solid #555; padding: 5px 15px; cursor: pointer; font-family: inherit; }
         .back-btn-abs:hover { background: #555; }
 
-        /* RICKROLL UI (СТАРЫЙ СТИЛЬ) */
-        .rick-legacy-container {
-            background-color: #1a1a1a; padding: 2.5rem; border: 1px solid #00ff00;
-            border-radius: 5px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
-            width: 90%; max-width: 700px; text-align: center; position: relative; z-index: 1;
-        }
+        /* RICKROLL UI */
+        .rick-legacy-container { background-color: #1a1a1a; padding: 2.5rem; border: 1px solid #00ff00; border-radius: 5px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); width: 90%; max-width: 700px; text-align: center; position: relative; z-index: 1; }
         .rick-input { width: 90%; padding: 15px; background: #000; border: 1px solid #333; color: #00ff00; font-family: 'Courier New', monospace; font-size: 1.2rem; margin: 20px 0; outline: none; text-align: center; }
         .rick-input:focus { border-color: #00ff00; box-shadow: 0 0 10px rgba(0,255,0,0.3); }
         .rick-btn { background-color: #003300; color: #00ff00; border: 1px solid #00ff00; padding: 15px 40px; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; font-weight: bold; transition: 0.3s; font-family: 'Courier New', monospace; }
@@ -169,43 +187,70 @@
         <div class="user-welcome">ПОЛЬЗОВАТЕЛЬ: <span id="user-display">...</span> | <span onclick="doLogout()" style="cursor:pointer; text-decoration:underline;">ВЫХОД</span></div>
         
         <div class="dashboard-container">
-            <div class="hub-title">ГЛАВНОЕ МЕНЮ v16.3</div>
+            <div class="hub-title">ГЛАВНОЕ МЕНЮ v20.0</div>
             <div class="hub-grid">
-                <!-- 1. VIRUS (ALL) -->
+                <!-- VIRUS -->
                 <div class="hub-card" id="card-virus" onclick="openTool('virus')">
                     <div class="lock-icon">🔒</div>
                     <div class="card-icon">🧬</div>
                     <div class="card-title">АНТИВИРУС</div>
                 </div>
-                <!-- 2. RICK (ALL) -->
+                
+                <!-- MAKER (SOON) -->
+                <div class="hub-card soon" id="card-maker">
+                    <div class="card-icon" style="filter:grayscale(100%); color:#555;">🛠️</div>
+                    <div class="card-title" style="color:#666;">КОНСТРУКТОР</div>
+                    <div class="soon-text">СКОРО...</div>
+                </div>
+
+                <!-- EDITOR -->
+                <div class="hub-card" id="card-editor" onclick="openTool('editor')">
+                    <div class="lock-icon">🔒</div>
+                    <div class="card-icon">📝</div>
+                    <div class="card-title">SECURE PAD</div>
+                </div>
+
+                <!-- RICK -->
                 <div class="hub-card" id="card-rick" onclick="openTool('rick')">
                     <div class="lock-icon">🔒</div>
                     <div class="card-icon">🕵️‍♂️</div>
                     <div class="card-title">АНТИ-ТРОЛЛ</div>
                 </div>
-                <!-- 3. PASS (ALL) -->
-                <div class="hub-card" id="card-pass" onclick="openTool('pass')">
-                    <div class="lock-icon">🔒</div>
-                    <div class="card-icon">🔐</div>
-                    <div class="card-title">АУДИТ ПАРОЛЕЙ</div>
-                </div>
-                <!-- 4. OSINT (AUTO+) -->
+                <!-- OSINT -->
                 <div class="hub-card" id="card-osint" onclick="openTool('osint')">
                     <div class="lock-icon">🔒</div>
                     <div class="card-icon">👁️</div>
                     <div class="card-title">OSINT СКАНЕР</div>
                 </div>
-                <!-- 5. EXIF (FULL) -->
+                <!-- FOOTPRINT (NEW) -->
+                <div class="hub-card" id="card-footprint" onclick="openTool('footprint')">
+                    <div class="lock-icon">🔒</div>
+                    <div class="card-icon">👣</div>
+                    <div class="card-title">ЦИФРОВОЙ СЛЕД</div>
+                </div>
+                <!-- PASS -->
+                <div class="hub-card" id="card-pass" onclick="openTool('pass')">
+                    <div class="lock-icon">🔒</div>
+                    <div class="card-icon">🔐</div>
+                    <div class="card-title">АУДИТ ПАРОЛЕЙ</div>
+                </div>
+                <!-- EXIF -->
                 <div class="hub-card" id="card-exif" onclick="openTool('exif')">
                     <div class="lock-icon">🔒</div>
                     <div class="card-icon">📸</div>
                     <div class="card-title">EXIF ШПИОН</div>
                 </div>
-                <!-- 6. CRYPTO (FULL) -->
+                <!-- CRYPTO -->
                 <div class="hub-card" id="card-crypto" onclick="openTool('crypto')">
                     <div class="lock-icon">🔒</div>
                     <div class="card-icon">🔓</div>
                     <div class="card-title">КРИПТО СТАНЦИЯ</div>
+                </div>
+                <!-- STEGANOGRAPHY (NEW) -->
+                <div class="hub-card" id="card-stego" onclick="openTool('stego')">
+                    <div class="lock-icon">🔒</div>
+                    <div class="card-icon">🖼️</div>
+                    <div class="card-title">СТЕГАНОГРАФИЯ</div>
                 </div>
             </div>
         </div>
@@ -223,12 +268,10 @@
             <select id="targetType" title="Тип">
                 <option value="bat">Batch (.bat)</option>
                 <option value="py">Python (.py)</option>
-                <option value="vbs">VBScript (.vbs)</option>
-                <option value="ps1">PowerShell</option>
-                
-                <!-- Заблокированные в Default -->
                 <option value="exe" disabled>Binary (.exe) [LOCK]</option>
                 <option value="jar" disabled>Java (.jar) [LOCK]</option>
+                <option value="vbs">VBScript (.vbs)</option>
+                <option value="ps1">PowerShell</option>
                 <option value="web" disabled>Web (.js/.html) [LOCK]</option>
                 <option value="zip" disabled>Архив (.zip) [LOCK]</option>
             </select>
@@ -239,25 +282,84 @@
         <div class="terminal" id="terminal"><div class="sys">> Модуль готов к работе.</div></div>
     </div>
 
-    <!-- 4. RICKROLL DETECTOR (OLD STYLE) -->
+    <!-- 4. SCRIPT MAKER (HIDDEN) -->
+    <div id="maker-tool" class="screen"></div>
+
+    <!-- 5. SECURE EDITOR -->
+    <div id="editor-tool" class="screen">
+        <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
+        <div class="module-container" style="max-width:1000px;">
+            <h1 style="text-align:center;">📝 ЗАЩИЩЕННЫЙ РЕДАКТОР</h1>
+            <div class="editor-controls">
+                <div class="editor-group">
+                    <span class="editor-label">Текст:</span>
+                    <select id="edColorPreset" onchange="applyPresetColor()" style="width:100px;">
+                        <option value="#00ff00">Зеленый</option>
+                        <option value="#ffffff">Белый</option>
+                        <option value="#ff0000">Красный</option>
+                        <option value="#ffd700">Золотой</option>
+                        <option value="#00ffff">Циан</option>
+                        <option value="#ff00ff">Пурпур</option>
+                        <option value="#ff4500">Оранжевый</option>
+                        <option value="#adff2f">Лайм</option>
+                    </select>
+                    <input type="color" id="edCustomColor" onchange="applyCustomColor()" title="Палитра" style="width:40px; padding:0;">
+                </div>
+
+                <div class="editor-group">
+                    <span class="editor-label">Фон:</span>
+                    <input type="color" id="edBgColor" value="#000000" onchange="updateEditorStyle()" title="Цвет фона" style="width:40px; padding:0;">
+                    <input type="file" id="edBgImageInput" accept="image/*" style="display:none;" onchange="uploadBgImage()">
+                    <button onclick="document.getElementById('edBgImageInput').click()" style="cursor:pointer; background:#222; color:#fff; border:1px solid #444; padding:2px 5px; height:30px;">IMG</button>
+                    <button onclick="clearBgImage()" style="cursor:pointer; background:#222; color:red; border:1px solid #444; padding:2px 5px; height:30px;">X</button>
+                </div>
+
+                <div class="editor-group">
+                    <span class="editor-label">Шрифт:</span>
+                    <select id="edFont" onchange="updateEditorStyle()" style="width:110px;">
+                        <option value="'Consolas', monospace">Consolas</option>
+                        <option value="'Courier New', monospace">Courier</option>
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="'Verdana', sans-serif">Verdana</option>
+                        <option value="'Tahoma', sans-serif">Tahoma</option>
+                        <option value="'Trebuchet MS', sans-serif">Trebuchet</option>
+                        <option value="'Impact', sans-serif">Impact</option>
+                        <option value="'Georgia', serif">Georgia</option>
+                    </select>
+                </div>
+
+                <div class="editor-group">
+                    <span class="editor-label">Размер:</span>
+                    <input type="number" id="edSize" min="1" max="100" value="16" onchange="updateEditorStyle()" style="width:50px;">
+                </div>
+                
+                <button onclick="toggleGlow()" style="background:#333; color:cyan; border:1px solid cyan; cursor:pointer;">[GLOW]</button>
+                
+                <div class="editor-group" style="margin-left:auto;">
+                    <button onclick="downloadTxt()" style="background:#222; color:#fff; border:1px solid #555; cursor:pointer;">💾 TXT</button>
+                    <button onclick="downloadHtml()" style="background:#004400; color:#fff; border:1px solid #00ff00; cursor:pointer; font-weight:bold;">🎨 HTML</button>
+                </div>
+            </div>
+            <textarea id="securePad" class="editor-textarea" placeholder="Введите секретные данные... (Автосохранение включено)"></textarea>
+        </div>
+    </div>
+
+    <!-- 6. RICKROLL DETECTOR -->
     <div id="rick-tool" class="screen">
         <div class="scan-line"></div>
         <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
-        
         <div class="rick-legacy-container">
             <h1>🕵️‍♂️ Anti-Troll v3.0</h1>
             <p style="color:#ccc; font-family:sans-serif;">Вставьте ссылку. Система проверит ID, домен и название.</p>
-            
             <input type="text" id="urlInput" class="rick-input" placeholder="Вставьте ссылку сюда..." autocomplete="off">
             <br>
             <button onclick="startRickScan()" id="rickScanBtn" class="rick-btn">АНАЛИЗИРОВАТЬ</button>
-
             <div id="rick-result"></div>
         </div>
         <audio id="rickPlayer" loop><source src="https://ia801602.us.archive.org/11/items/Rick_Astley_Never_Gonna_Give_You_Up/Rick_Astley_Never_Gonna_Give_You_Up.mp3" type="audio/mpeg"></audio>
     </div>
 
-    <!-- 5. OSINT SCANNER -->
+    <!-- 7. OSINT SCANNER -->
     <div id="osint-tool" class="screen">
         <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
         <div class="module-container">
@@ -277,7 +379,22 @@
         </div>
     </div>
 
-    <!-- 6. PASSWORD AUDITOR -->
+    <!-- 8. DIGITAL FOOTPRINT (NEW) -->
+    <div id="footprint-tool" class="screen">
+        <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
+        <div class="module-container">
+            <h1 style="text-align:center;">👣 ЦИФРОВОЙ СЛЕД</h1>
+            <p style="text-align:center; color:#aaa; margin-bottom:20px;">Что сайты знают о вас просто так:</p>
+            <div class="fp-grid" id="fp-data">
+                <!-- Данные заполнятся JS -->
+            </div>
+            <div style="text-align:center; margin-top:20px;">
+                <button onclick="loadFootprint()" style="background:#004400; color:#fff; border:1px solid #00ff00; padding:10px 20px; cursor:pointer;">ОБНОВИТЬ ДАННЫЕ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. PASSWORD AUDITOR -->
     <div id="pass-tool" class="screen">
         <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
         <div class="module-container">
@@ -291,7 +408,7 @@
         </div>
     </div>
 
-    <!-- 7. EXIF SPY -->
+    <!-- 10. EXIF SPY -->
     <div id="exif-tool" class="screen">
         <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
         <div class="module-container">
@@ -303,7 +420,7 @@
         </div>
     </div>
 
-    <!-- 8. CRYPTO STATION -->
+    <!-- 11. CRYPTO STATION -->
     <div id="crypto-tool" class="screen">
         <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
         <div class="module-container">
@@ -314,13 +431,44 @@
                     <option value="binary">Бинарный (01)</option>
                     <option value="hex">HEX (16-ричный)</option>
                     <option value="caesar">Цезарь (+3)</option>
-                    <option value="reverse">Реверс (Задом наперед)</option>
+                    <option value="reverse">Реверс</option>
                 </select>
                 <button onclick="doCrypto('enc')" style="flex-grow:1; cursor:pointer;">ЗАШИФРОВАТЬ</button>
                 <button onclick="doCrypto('dec')" style="flex-grow:1; cursor:pointer; border-color:orange; color:orange;">РАСШИФРОВАТЬ</button>
             </div>
             <textarea id="cryptoInput" placeholder="Введите текст..." style="width:100%; height:100px; background:#000; border:1px solid #333; color:#00ff00; padding:10px; box-sizing:border-box; margin-bottom:10px;"></textarea>
             <div id="crypto-result" class="result-box" style="min-height:50px;">Результат...</div>
+        </div>
+    </div>
+
+    <!-- 12. STEGANOGRAPHY (NEW) -->
+    <div id="stego-tool" class="screen">
+        <button class="back-btn-abs" onclick="showDashboard()">« МЕНЮ</button>
+        <div class="module-container">
+            <h1 style="text-align:center;">🖼️ СТЕГАНОГРАФИЯ (LSB)</h1>
+            <p style="text-align:center; color:#888; font-size:0.9em; margin-bottom:20px;">Спрячьте текст внутри пикселей картинки (только PNG).</p>
+            
+            <div style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center;">
+                <!-- Левая часть: Картинка -->
+                <div style="flex:1; min-width:300px; text-align:center;">
+                    <input type="file" id="stegoInput" accept="image/*" style="margin-bottom:10px;">
+                    <div style="width:100%; height:200px; border:1px dashed #333; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                        <img id="stegoPreview" style="max-width:100%; max-height:100%; display:none;">
+                        <span id="stegoPlaceholder" style="color:#444;">Нет изображения</span>
+                    </div>
+                    <canvas id="stegoCanvas" style="display:none;"></canvas>
+                </div>
+
+                <!-- Правая часть: Текст -->
+                <div style="flex:1; min-width:300px; display:flex; flex-direction:column; gap:10px;">
+                    <textarea id="stegoText" placeholder="Введите секретное сообщение..." style="flex:1; min-height:150px; background:#000; border:1px solid #333; color:#0f0; padding:10px; resize:none;"></textarea>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="stegoEncode()" style="flex:1; background:#004400; border:1px solid #0f0; color:#fff; cursor:pointer; padding:10px;">СПРЯТАТЬ И СКАЧАТЬ</button>
+                        <button onclick="stegoDecode()" style="flex:1; background:#333; border:1px solid orange; color:orange; cursor:pointer; padding:10px;">ПРОЧИТАТЬ</button>
+                    </div>
+                </div>
+            </div>
+            <div id="stegoStatus" style="margin-top:10px; text-align:center; color:#ccc;"></div>
         </div>
     </div>
 
@@ -358,8 +506,8 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // GLOBALS
         let fileRawData = null, fileName = "", fileLines = [], currentUserSub = 'default';
+        let bgImageBase64 = "";
 
         // --- UI ---
         window.showScreen = (id) => {
@@ -367,46 +515,50 @@
             document.getElementById(id).classList.add('active');
         }
         
-        // OPEN TOOL WITH PERMISSION CHECK
         window.openTool = (tool) => {
-            // PERMISSION LOGIC
+            // PERMISSIONS
             const perms = {
                 'virus': ['default', 'Auto', 'Full'],
                 'rick': ['default', 'Auto', 'Full'],
                 'pass': ['default', 'Auto', 'Full'],
+                'maker': ['Auto', 'Full'],
+                'editor': ['default', 'Auto', 'Full'],
                 'osint': ['Auto', 'Full'],
+                'footprint': ['Auto', 'Full'],
                 'exif': ['Full'],
-                'crypto': ['Full']
+                'crypto': ['Full'],
+                'stego': ['Full']
             };
 
-            if (!perms[tool].includes(currentUserSub)) {
+            if (tool !== 'maker' && !perms[tool].includes(currentUserSub)) {
                 alert("ДОСТУП ЗАПРЕЩЕН! Требуется повышение уровня подписки.");
                 return;
             }
+            if(tool === 'maker') return;
 
             const loader = document.getElementById('loading-overlay');
             const msg = document.getElementById('loading-msg');
             const msgs = { 
-                virus: "ЗАГРУЗКА АНТИВИРУСА...", 
-                rick: "ЗАГРУЗКА АНТИ-ТРОЛЛА...", 
-                osint: "ЗАГРУЗКА OSINT...", 
-                pass: "ЗАГРУЗКА АУДИТА...", 
-                exif: "ЗАГРУЗКА EXIF...", 
-                crypto: "ЗАГРУЗКА КРИПТО..." 
+                virus: "ЗАГРУЗКА АНТИВИРУСА...", rick: "ЗАГРУЗКА АНТИ-ТРОЛЛА...", maker: "ЗАГРУЗКА КОНСТРУКТОРА...",
+                osint: "ЗАГРУЗКА OSINT...", pass: "ЗАГРУЗКА АУДИТА...", exif: "ЗАГРУЗКА EXIF...", crypto: "ЗАГРУЗКА КРИПТО...", 
+                editor: "ЗАГРУЗКА РЕДАКТОРА...", footprint: "АНАЛИЗ ОТПЕЧАТКА...", stego: "ЗАГРУЗКА СТЕГАНОГРАФИИ..."
             };
             msg.innerText = msgs[tool] || "ЗАГРУЗКА...";
             
-            loader.style.display = 'flex'; 
-            void loader.offsetWidth; 
-            loader.style.opacity = '1';
+            loader.style.display = 'flex'; void loader.offsetWidth; loader.style.opacity = '1';
+            
+            if(tool === 'footprint') loadFootprint(); // Preload data
 
             setTimeout(() => {
                 if(tool === 'virus') window.showScreen('virus-tool');
                 if(tool === 'rick') window.showScreen('rick-tool');
+                if(tool === 'editor') window.showScreen('editor-tool');
                 if(tool === 'osint') window.showScreen('osint-tool');
                 if(tool === 'pass') window.showScreen('pass-tool');
                 if(tool === 'exif') window.showScreen('exif-tool');
                 if(tool === 'crypto') window.showScreen('crypto-tool');
+                if(tool === 'footprint') window.showScreen('footprint-tool');
+                if(tool === 'stego') window.showScreen('stego-tool');
                 
                 loader.style.opacity = '0';
                 setTimeout(() => { loader.style.display = 'none'; }, 500);
@@ -425,66 +577,47 @@
                     const sub = (s.val() && s.val().Subscribe) ? s.val().Subscribe : 'default';
                     currentUserSub = sub;
                     
-                    // 1. VIRUS HUNTER MODES & FILES
                     const oA = document.querySelector('option[value="auto"]'), oF = document.querySelector('option[value="full"]');
                     oA.disabled=true; oA.innerText="Авто [ЗАКРЫТО]"; oF.disabled=true; oF.innerText="Полное [ЗАКРЫТО]";
                     if(sub==='Auto'||sub==='Full') { oA.disabled=false; oA.innerText="Авто"; }
                     if(sub==='Full') { oF.disabled=false; oF.innerText="Полное"; }
                     
-                    updateVirusAccess(sub); // Обновляем список файлов
-
-                    // 2. DASHBOARD LOCKS
+                    updateVirusAccess(sub);
                     updateHubLocks(sub);
                 });
                 listenFeed();
+                if(localStorage.getItem('secure_pad')) document.getElementById('securePad').value = localStorage.getItem('secure_pad');
             } else window.showScreen('auth-screen');
         });
         
         function updateHubLocks(sub) {
-            const cards = {
-                'virus': document.getElementById('card-virus'),
-                'rick': document.getElementById('card-rick'),
-                'pass': document.getElementById('card-pass'),
-                'osint': document.getElementById('card-osint'),
-                'exif': document.getElementById('card-exif'),
-                'crypto': document.getElementById('card-crypto')
-            };
-
-            for (let k in cards) cards[k].classList.remove('locked');
-
+            const cards = { 'virus':'card-virus', 'rick':'card-rick', 'pass':'card-pass', 'maker':'card-maker', 'editor':'card-editor', 'osint':'card-osint', 'exif':'card-exif', 'crypto':'card-crypto', 'footprint':'card-footprint', 'stego':'card-stego' };
+            for (let k in cards) if(document.getElementById(cards[k])) document.getElementById(cards[k]).classList.remove('locked');
+            
             if (sub === 'default') {
-                cards['osint'].classList.add('locked');
-                cards['exif'].classList.add('locked');
-                cards['crypto'].classList.add('locked');
+                ['osint', 'footprint', 'exif', 'crypto', 'stego'].forEach(k => document.getElementById(cards[k]).classList.add('locked'));
             } else if (sub === 'Auto') {
-                cards['exif'].classList.add('locked');
-                cards['crypto'].classList.add('locked');
+                ['exif', 'crypto', 'stego'].forEach(k => document.getElementById(cards[k]).classList.add('locked'));
             }
+            // Maker is always locked (soon)
+            document.getElementById(cards['maker']).classList.add('soon');
         }
 
         function updateVirusAccess(sub) {
             const select = document.getElementById('targetType');
             const opts = select.options;
-
-            // default: bat
-            // Auto: bat, py, vbs, ps1
-            // Full: all
             const allowedDefault = ['bat'];
             const allowedAuto = ['bat', 'py', 'vbs', 'ps1'];
-
             for(let i=0; i<opts.length; i++) {
                 let val = opts[i].value;
                 let label = opts[i].text.replace(/ \[LOCK\]/g, '');
                 let disabled = true;
-
                 if(sub === 'Full') disabled = false;
                 else if(sub === 'Auto' && allowedAuto.includes(val)) disabled = false;
                 else if(sub === 'default' && allowedDefault.includes(val)) disabled = false;
-
                 opts[i].disabled = disabled;
                 opts[i].text = label + (disabled ? " [LOCK]" : "");
             }
-            // Сброс на bat, если выбран недоступный
             if(select.selectedOptions[0].disabled) select.value = 'bat';
         }
 
@@ -495,19 +628,176 @@
             onValue(ref(db, 'scans'), (s) => {
                 const f = document.getElementById('feed'); f.innerHTML=""; const d=s.val(); if(!d)return;
                 Object.values(d).reverse().slice(0,15).forEach(i=>{
-                    let c="clean"; 
-                    if(i.score>=3)c="critical"; else if(i.score==2)c="dangerous"; else if(i.score==1)c="suspicious";
-                    let statusRu = i.status;
-                    if(statusRu === "CLEAN") statusRu = "ЧИСТО";
-                    if(statusRu === "SUSPICIOUS") statusRu = "ПОДОЗРИТЕЛЬНО";
-                    if(statusRu === "DANGEROUS") statusRu = "ОПАСНО";
-                    if(statusRu === "INFECTED" || statusRu === "VERY DANGEROUS") statusRu = "КРИТИЧНО";
-                    if(statusRu === "WARNING") statusRu = "ОПАСНО";
-                    
-                    f.innerHTML+=`<div class="feed-item ${c}"><b>${i.filename}</b><br>${statusRu}</div>`;
+                    let c="clean"; if(i.score>=3)c="critical"; else if(i.score==2)c="dangerous"; else if(i.score==1)c="suspicious";
+                    let sRu = i.status === "CLEAN" ? "ЧИСТО" : i.status === "INFECTED" ? "КРИТИЧНО" : i.status;
+                    f.innerHTML+=`<div class="feed-item ${c}"><b>${i.filename}</b><br>${sRu}</div>`;
                 });
             });
         }
+
+        // --- EDITOR LOGIC ---
+        document.getElementById('securePad').addEventListener('input', (e) => localStorage.setItem('secure_pad', e.target.value));
+        window.applyPresetColor = () => { document.getElementById('securePad').style.color = document.getElementById('edColorPreset').value; }
+        window.applyCustomColor = () => { document.getElementById('securePad').style.color = document.getElementById('edCustomColor').value; }
+        window.updateEditorStyle = () => {
+            const pad = document.getElementById('securePad');
+            pad.style.fontFamily = document.getElementById('edFont').value;
+            pad.style.fontSize = document.getElementById('edSize').value + 'px';
+            pad.style.backgroundColor = document.getElementById('edBgColor').value;
+        }
+        window.uploadBgImage = () => {
+            const file = document.getElementById('edBgImageInput').files[0];
+            if(file){ const r = new FileReader(); r.onload = (e) => { bgImageBase64 = e.target.result; document.getElementById('securePad').style.backgroundImage = `url(${bgImageBase64})`; }; r.readAsDataURL(file); }
+        }
+        window.clearBgImage = () => { bgImageBase64 = ""; document.getElementById('securePad').style.backgroundImage = "none"; document.getElementById('edBgImageInput').value = ""; }
+        window.toggleGlow = () => document.getElementById('securePad').classList.toggle('glow-text');
+        window.downloadTxt = () => { const blob = new Blob([document.getElementById('securePad').value], {type: "text/plain;charset=utf-8"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "secure_note.txt"; a.click(); }
+        window.downloadHtml = () => {
+            const text = document.getElementById('securePad').value; const color = document.getElementById('securePad').style.color || '#00ff00'; const bgColor = document.getElementById('securePad').style.backgroundColor || '#000000'; const font = document.getElementById('edFont').value; const size = document.getElementById('edSize').value; const isGlow = document.getElementById('securePad').classList.contains('glow-text'); const glowStyle = isGlow ? "text-shadow: 0 0 5px currentColor;" : ""; const bgStyle = bgImageBase64 ? `background-image: url(${bgImageBase64}); background-size: cover; background-position: center;` : `background-color: ${bgColor};`;
+            const htmlContent = `<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Secure Note</title><style>body{margin:0;padding:20px;height:100vh;box-sizing:border-box; ${bgStyle} color:${color}; font-family:${font}; font-size:${size}px; ${glowStyle} white-space:pre-wrap; word-wrap:break-word;}</style></head><body>${text}</body></html>`;
+            const blob = new Blob([htmlContent], {type: "text/html;charset=utf-8"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "secure_note.html"; a.click();
+        }
+
+        // --- FOOTPRINT LOGIC ---
+        window.loadFootprint = () => {
+            const d = document.getElementById('fp-data');
+            d.innerHTML = "";
+            const items = [
+                { l: "Браузер (User Agent)", v: navigator.userAgent },
+                { l: "Язык", v: navigator.language },
+                { l: "Платформа", v: navigator.platform },
+                { l: "Ядра процессора", v: navigator.hardwareConcurrency || "N/A" },
+                { l: "Оперативная память", v: (navigator.deviceMemory ? `~${navigator.deviceMemory} ГБ` : "N/A") },
+                { l: "Разрешение экрана", v: `${screen.width}x${screen.height}` },
+                { l: "Глубина цвета", v: `${screen.colorDepth} бит` },
+                { l: "Часовой пояс", v: Intl.DateTimeFormat().resolvedOptions().timeZone },
+                { l: "Cookie включены", v: navigator.cookieEnabled ? "ДА" : "НЕТ" },
+                { l: "Do Not Track", v: navigator.doNotTrack || "Нет" }
+            ];
+            items.forEach(i => d.innerHTML += `<div class="fp-item"><span class="fp-label">${i.l}:</span> <span class="fp-value">${i.v}</span></div>`);
+        }
+
+        // --- STEGANOGRAPHY LOGIC ---
+        document.getElementById('stegoInput').onchange = (e) => {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = document.getElementById('stegoPreview');
+                    img.src = ev.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('stegoPlaceholder').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.stegoEncode = () => {
+            const fileInput = document.getElementById('stegoInput');
+            const text = document.getElementById('stegoText').value;
+            const status = document.getElementById('stegoStatus');
+            
+            if(!fileInput.files[0] || !text) { status.innerText = "Выберите картинку и введите текст!"; return; }
+            
+            status.innerText = "Шифрование...";
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.getElementById('stegoCanvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width; canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imgData.data;
+                    
+                    // Convert text to binary string
+                    let binaryText = "";
+                    for (let i = 0; i < text.length; i++) {
+                        let binaryChar = text.charCodeAt(i).toString(2).padStart(8, "0");
+                        binaryText += binaryChar;
+                    }
+                    // Add terminator (null char)
+                    binaryText += "00000000";
+                    
+                    if(binaryText.length > data.length / 4) { status.innerText = "Текст слишком длинный для этой картинки!"; return; }
+                    
+                    let dataIndex = 0;
+                    for(let i=0; i < binaryText.length; i++) {
+                        // Modify LSB of Red channel (every 4th value is R of next pixel)
+                        // Simple LSB: clear last bit, add new bit
+                        // We use data[dataIndex] which is R, G, B, A sequentially
+                        // Let's just use every channel except Alpha
+                        if((dataIndex + 1) % 4 === 0) dataIndex++; // Skip Alpha
+                        
+                        let bit = parseInt(binaryText[i]);
+                        data[dataIndex] = (data[dataIndex] & ~1) | bit;
+                        dataIndex++;
+                    }
+                    
+                    ctx.putImageData(imgData, 0, 0);
+                    const newDataUrl = canvas.toDataURL("image/png");
+                    
+                    const link = document.createElement('a');
+                    link.download = "secret_image.png";
+                    link.href = newDataUrl;
+                    link.click();
+                    status.innerText = "Готово! Картинка скачана.";
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        };
+
+        window.stegoDecode = () => {
+            const fileInput = document.getElementById('stegoInput');
+            const status = document.getElementById('stegoStatus');
+            const textArea = document.getElementById('stegoText');
+            
+            if(!fileInput.files[0]) { status.innerText = "Загрузите картинку!"; return; }
+            
+            status.innerText = "Дешифровка...";
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.getElementById('stegoCanvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width; canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imgData.data;
+                    
+                    let binaryText = "";
+                    let charBinary = "";
+                    let text = "";
+                    
+                    let dataIndex = 0;
+                    
+                    while(dataIndex < data.length) {
+                        if((dataIndex + 1) % 4 === 0) { dataIndex++; continue; } // Skip Alpha
+                        
+                        // Read LSB
+                        let bit = data[dataIndex] & 1;
+                        charBinary += bit;
+                        
+                        if(charBinary.length === 8) {
+                            if(charBinary === "00000000") break; // Terminator found
+                            text += String.fromCharCode(parseInt(charBinary, 2));
+                            charBinary = "";
+                        }
+                        dataIndex++;
+                    }
+                    
+                    textArea.value = text;
+                    status.innerText = "Готово! Текст извлечен.";
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        };
 
         // --- 1. VIRUS HUNTER ---
         const batRules=[{regex:/del\s|erase\s/i,msg:"УДАЛЕНИЕ ФАЙЛА",level:1},{regex:/shutdown/i,msg:"ВЫКЛЮЧЕНИЕ",level:1},{regex:/format\s/i,msg:"ФОРМАТИРОВАНИЕ",level:3},{regex:/reg\s+add/i,msg:"ИЗМЕНЕНИЕ РЕЕСТРА",level:3},{regex:/%0/i,msg:"FORK-БОМБА",level:2}];
@@ -548,14 +838,7 @@
             const m=u.match(/v?=([^#&?]*)/);
             if(m&&rickIds.includes(m[1])){showRickResult("DANGER","ЭТО РИКРОЛЛ!","ID совпал."); return;}
             if(currentUserSub!=='Full'){showRickResult("SAFE","БАЗА ЧИСТА","Нет в списке (Deep Scan в FULL)."); return;}
-            try{const f=await fetch(`https://noembed.com/embed?url=${u}`);const d=await f.json();
-                if(d.title){
-                    const tl=d.title.toLowerCase();
-                    let fk=rickKeywords.find(w=>tl.includes(w));
-                    if(fk)showRickResult("DANGER","СКРЫТАЯ УГРОЗА",`Название: "${d.title}"`);
-                    else showRickResult("SAFE","ЧИСТО",`Название: "${d.title}"`);
-                } else showRickResult("SAFE","ЧИСТО","Название не получено.");
-            }catch{showRickResult("WARNING","ОШИБКА","Сбой проверки.");}
+            try{const f=await fetch(`https://noembed.com/embed?url=${u}`);const d=await f.json();if(d.title&&d.title.toLowerCase().includes("rick"))r.innerHTML='<b style="color:red">СКРЫТАЯ УГРОЗА!</b>';else r.innerHTML='<b style="color:lime">ЧИСТО.</b>';}catch{r.innerHTML='Ошибка';}
         }
         function showRickResult(t,title,desc){const r=document.getElementById('rick-result');let c=t==="DANGER"?"red":(t==="SAFE"?"lime":"orange");r.style.borderColor=c;r.style.color=c;r.innerHTML=`<div style="font-size:1.4em; font-weight:bold;">${title}</div><div style="color:#ccc;">${desc}</div>`;}
 
@@ -573,11 +856,7 @@
             
             if(t==='ip'){try{const q=await fetch(`https://ipwho.is/${v}`);const d=await q.json();res.innerHTML=`IP: ${d.ip}\nГород: ${d.city}, ${d.country}\nПровайдер: ${d.connection.isp}`;}catch{res.innerHTML="Ошибка сети.";}}
             else if(t==='port'){ res.innerHTML=`Порт ${v.split(':')[1]}: ПРОВЕРЕН.\nСтатус: ФИЛЬТР (Браузерное ограничение)`; }
-            else if(t==='whois'){ 
-                try{const q=await fetch(`https://rdap.org/domain/${v}`); const d=await q.json();
-                res.innerHTML=`ДОМЕН: ${d.handle}\nСТАТУС: ${d.status?d.status.join(', '):'N/A'}\nПОРТ 43: ${d.port43 || 'N/A'}`;}
-                catch{res.innerHTML=`WHOIS недоступен для ${v}.`;}
-            }
+            else if(t==='whois'){ try{const q=await fetch(`https://rdap.org/domain/${v}`); const d=await q.json(); res.innerHTML=`ДОМЕН: ${d.handle}\nСТАТУС: ${d.status?d.status.join(', '):'N/A'}\nПОРТ 43: ${d.port43 || 'N/A'}`;}catch{res.innerHTML=`WHOIS недоступен для ${v}.`;} }
             else { res.innerHTML=`Анализ ${v}: ФОРМАТ ВЕРЕН.`; }
         }
 
@@ -615,19 +894,10 @@
             let out="";
             try {
                 if(t==='base64') out = act==='enc' ? btoa(inp) : atob(inp);
-                if(t==='binary') {
-                    if(act==='enc') out = inp.split('').map(c=>c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
-                    else out = inp.split(' ').map(b=>String.fromCharCode(parseInt(b,2))).join('');
-                }
-                if(t==='hex') {
-                     if(act==='enc') out = inp.split('').map(c=>c.charCodeAt(0).toString(16)).join(' ');
-                     else out = inp.split(' ').map(h=>String.fromCharCode(parseInt(h,16))).join('');
-                }
+                if(t==='binary') { if(act==='enc') out = inp.split('').map(c=>c.charCodeAt(0).toString(2).padStart(8,'0')).join(' '); else out = inp.split(' ').map(b=>String.fromCharCode(parseInt(b,2))).join(''); }
+                if(t==='hex') { if(act==='enc') out = inp.split('').map(c=>c.charCodeAt(0).toString(16)).join(' '); else out = inp.split(' ').map(h=>String.fromCharCode(parseInt(h,16))).join(''); }
                 if(t==='reverse') out = inp.split('').reverse().join('');
-                if(t==='caesar') {
-                    const s = act==='enc'?3:-3;
-                    out = inp.replace(/[a-zA-Z]/g, c => String.fromCharCode((c<="Z"?90:122)>=(c=c.charCodeAt(0)+s)?c:c-26));
-                }
+                if(t==='caesar') { const s = act==='enc'?3:-3; out = inp.replace(/[a-zA-Z]/g, c => String.fromCharCode((c<="Z"?90:122)>=(c=c.charCodeAt(0)+s)?c:c-26)); }
                 r.innerText = out;
             } catch(e) { r.innerText = "Ошибка!"; }
         }
